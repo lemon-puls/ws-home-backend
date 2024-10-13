@@ -1,1 +1,5 @@
 .idea/
+
+config/config-*.yaml
+
+!config/config-{env}.yaml
