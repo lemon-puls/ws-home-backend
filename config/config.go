@@ -9,7 +9,24 @@ import (
 var Conf = new(AppConfig)
 
 type AppConfig struct {
-	*MysqlConfig `mapstructure:"mysql"`
+	*ServerConfig `mapstructure:"server"`
+	*LogConfig    `mapstructure:"log"`
+	*MysqlConfig  `mapstructure:"mysql"`
+}
+
+type ServerConfig struct {
+	Name    string `mapstructure:"name"`
+	Port    int    `mapstructure:"port"`
+	Profile string `mapstructure:"profile"`
+	Version string `mapstructure:"version"`
+}
+
+type LogConfig struct {
+	Level      string `mapstructure:"level"`
+	FileName   string `mapstructure:"file_name"`
+	MaxSize    int    `mapstructure:"max_size"`
+	MaxBackups int    `mapstructure:"max_backups"`
+	MaxAge     int    `mapstructure:"max_age"`
 }
 
 type MysqlConfig struct {
