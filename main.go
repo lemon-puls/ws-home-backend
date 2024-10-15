@@ -1,11 +1,17 @@
 package main
 
 import (
+	"flag"
 	"go.uber.org/zap"
 	"ws-home-backend/config"
 )
 
 func main() {
+
+	var configPath string
+	flag.StringVar(&configPath, "cfg", "./config/config.yaml", "配置文件路径")
+	flag.Parse()
+
 	// 初始化配置
 	config.InitConfig("./config/config-dev.yaml")
 	// 初始化日志
