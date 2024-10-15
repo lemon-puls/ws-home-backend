@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"time"
+	"ws-home-backend/model"
 )
 
 var DB *gorm.DB
@@ -79,6 +80,10 @@ func InitDB(conf *MysqlConfig) *gorm.DB {
 	sqlDB.SetMaxOpenConns(maxOpenConns) //设置打开数据库连接的最大数量
 	sqlDB.SetConnMaxLifetime(time.Hour) //设置了连接可复用的最大时间
 	DB = db
+
+	//数据库迁移
+	db.AutoMigrate(&model.User{})
+
 	return db
 }
 
