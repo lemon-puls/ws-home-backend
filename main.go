@@ -5,6 +5,7 @@ import (
 	"flag"
 	"go.uber.org/zap"
 	"ws-home-backend/config"
+	"ws-home-backend/router"
 )
 
 func main() {
@@ -24,6 +25,8 @@ func main() {
 	config.InitDB(config.Conf.MysqlConfig)
 	// 初始化 Redis 连接
 	config.InitRedis(config.Conf.RedisConfig, background)
+	// 初始化 Gin Router
+	router.InitRouter()
 
 	//config.RDB.Set(background, "test", "Go 使用 Redis", 0)
 	zap.L().Info("Server started", zap.String("profile", config.Conf.Profile))
