@@ -12,6 +12,7 @@ type AppConfig struct {
 	*ServerConfig `mapstructure:"server"`
 	*LogConfig    `mapstructure:"log"`
 	*MysqlConfig  `mapstructure:"mysql"`
+	*RedisConfig  `mapstructure:"redis"`
 }
 
 type ServerConfig struct {
@@ -27,6 +28,13 @@ type LogConfig struct {
 	MaxSize    int    `mapstructure:"max_size"`
 	MaxBackups int    `mapstructure:"max_backups"`
 	MaxAge     int    `mapstructure:"max_age"`
+}
+
+type RedisConfig struct {
+	Host     string `mapstructure:"host"`
+	Port     int    `mapstructure:"port"`
+	Password string `mapstructure:"password"`
+	DB       int    `mapstructure:"db"`
 }
 
 type MysqlConfig struct {

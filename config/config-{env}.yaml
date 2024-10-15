@@ -21,6 +21,16 @@ log:
   max_age: 30
   # 日志文件分割数量上限
   max_backups: 10
+# Redis 配置
+redis:
+  # Redis 地址
+  host: localhost
+  # Redis 端口
+  port: 6379
+  # Redis 密码
+  password: ""
+  # 指定数据库
+  db: 0
 
 mysql:
   host: localhost
