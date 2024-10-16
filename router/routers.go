@@ -20,10 +20,11 @@ func InitRouter() *gin.Engine {
 		MaxAge:           86400, // 缓存预请求的结果，单位是秒
 	}))
 
-	//api := r.Group("/api")
-	//{
-	//	// 注册路由
-	//}
+	api := r.Group("/api")
+	{
+		// 注册路由
+		RegisterUserRouter(api)
+	}
 
 	zap.L().Info("gin server start")
 	return r
