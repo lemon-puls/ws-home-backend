@@ -5,3 +5,5 @@ config/config-*.yaml
 !config/config-{env}.yaml
 
 runtime/
+
+docs/

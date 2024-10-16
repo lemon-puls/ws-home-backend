@@ -9,6 +9,16 @@ import (
 	"ws-home-backend/utils"
 )
 
+// GetUserInfoById : 获取用户详情
+// @Summary 获取用户详情
+// @Description 获取用户详情
+// @Tags 用户模块
+// @Produce json
+// @Accept json
+// @Param userId query string true "用户ID"
+// @Success 0 {object} utils.Response{data=model.User} "成功响应"
+// @Failure 3 {object} utils.Response "失败响应"
+// @Router /user/one [get]
 func GetUserInfoById(ctx *gin.Context) {
 
 	value := ctx.Query("userId")

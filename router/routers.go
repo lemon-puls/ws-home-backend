@@ -3,6 +3,8 @@ package router
 import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	swaggerfiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.uber.org/zap"
 )
 
@@ -25,6 +27,9 @@ func InitRouter() *gin.Engine {
 		// 注册路由
 		RegisterUserRouter(api)
 	}
+
+	// 配置 Swagger UI
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	zap.L().Info("gin server start")
 	return r

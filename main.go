@@ -6,9 +6,17 @@ import (
 	"fmt"
 	"go.uber.org/zap"
 	"ws-home-backend/config"
+	_ "ws-home-backend/docs"
 	"ws-home-backend/router"
 )
 
+// @title WS Home Backend API
+// @version 1.0
+// @description 这是 WS Home Backend 的 API 文档
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+// @host localhost:8080
+// @BasePath /api
 func main() {
 
 	var configPath string
