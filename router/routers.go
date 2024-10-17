@@ -6,9 +6,14 @@ import (
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.uber.org/zap"
+	"ws-home-backend/config"
 )
 
 func InitRouter() *gin.Engine {
+
+	if err := config.InitTranslator("zh"); err != nil {
+		zap.L().Error("init translator failed", zap.Error(err))
+	}
 
 	r := gin.Default()
 
