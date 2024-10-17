@@ -6,6 +6,7 @@ import (
 	"go.uber.org/zap"
 	"strconv"
 	"ws-home-backend/business"
+	"ws-home-backend/dto"
 	"ws-home-backend/utils"
 )
 
@@ -35,4 +36,24 @@ func GetUserInfoById(ctx *gin.Context) {
 
 	zap.L().Info("Get user info by id", zap.Any("user", user))
 	utils.OkWithData(ctx, user)
+}
+
+// Register : 用户注册
+// @Summary 用户注册
+// @Description 用户注册
+// @Tags 用户模块
+// @Produce json
+// @Accept json
+// @Param body body dto.RegisterDTO true "用户注册信息"
+// @Success 0 {object} utils.Response{data=string} "成功响应"
+// @Router /user/register [post]
+func Register(ctx *gin.Context) {
+	var registerDTO dto.RegisterDTO
+	if err := ctx.ShouldBind(&registerDTO); err != nil {
+		// 参数校验失败
+		utils.ValidateError(ctx, err)
+		return
+	}
+	// TODO 注册用户逻辑
+	utils.OkWithMsg(ctx, "注册成功")
 }
