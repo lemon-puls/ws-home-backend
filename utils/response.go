@@ -33,6 +33,22 @@ func ErrorWithCode(ctx *gin.Context, code Code) {
 	})
 }
 
+func ErrorWithCodeAndMsg(ctx *gin.Context, code Code, msg string) {
+	response(ctx, http.StatusOK, &Response{
+		Code: int(code),
+		Msg:  msg,
+		Data: nil,
+	})
+}
+
+func ErrorWithData(ctx *gin.Context, code Code, data interface{}) {
+	response(ctx, http.StatusOK, &Response{
+		Code: int(code),
+		Msg:  code.ToMsg(),
+		Data: data,
+	})
+}
+
 // Ok returns a successful response
 func OkWithMsg(ctx *gin.Context, msg string) {
 	response(ctx, http.StatusOK, &Response{
