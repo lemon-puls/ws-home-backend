@@ -40,3 +40,10 @@ mysql:
   database: "ws_home"
   max_open_conns: 200
   max_idle_conns: 50
+
+# 雪花算法配置
+snowflake:
+  # 起始时间
+  start_time: "2024-10-19"
+  # 机器ID
+  machine_id: 1

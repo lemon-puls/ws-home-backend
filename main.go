@@ -36,6 +36,8 @@ func main() {
 	config.InitRedis(config.Conf.RedisConfig, background)
 	// 初始化 Gin Router
 	r := router.InitRouter()
+	// 初始化 雪花算法 ID 生成器
+	config.InitSnowflakeNode(config.Conf.SnowflakeConfig)
 
 	r.Run(fmt.Sprintf(":%d", config.Conf.ServerConfig.Port))
 
