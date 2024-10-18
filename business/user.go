@@ -5,7 +5,7 @@ import (
 	"ws-home-backend/model"
 )
 
-func GetUserById(userId int32) model.User {
+func GetUserById(userId int64) model.User {
 	db := config.GetDB()
 	var user model.User
 	db.Where(&model.User{UserId: userId}).Find(&user)

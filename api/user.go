@@ -25,7 +25,7 @@ func GetUserInfoById(ctx *gin.Context) {
 	value := ctx.Query("userId")
 	userId, _ := strconv.ParseInt(fmt.Sprintf("%v", value), 10, 32)
 
-	user := business.GetUserById(int32(userId))
+	user := business.GetUserById(int64(userId))
 
 	if user.UserId == 0 {
 		// user not found
