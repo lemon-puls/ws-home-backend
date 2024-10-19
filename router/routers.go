@@ -6,6 +6,8 @@ import (
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.uber.org/zap"
+	"time"
+	"ws-home-backend/common"
 	"ws-home-backend/config"
 )
 
@@ -26,6 +28,11 @@ func InitRouter() *gin.Engine {
 		AllowCredentials: true,
 		MaxAge:           86400, // 缓存预请求的结果，单位是秒
 	}))
+
+	// 捕捉 panic 并记录日志
+	r.Use(common.RecoveryWithZap(zap.L(), false))
+	// 记录请求日志
+	r.Use(common.LoggerWithZap(zap.L(), time.DateTime, false))
 
 	api := r.Group("/api")
 	{

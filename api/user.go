@@ -6,8 +6,8 @@ import (
 	"go.uber.org/zap"
 	"strconv"
 	"ws-home-backend/business"
+	"ws-home-backend/common"
 	"ws-home-backend/dto"
-	"ws-home-backend/utils"
 )
 
 // GetUserInfoById : 获取用户详情
@@ -30,12 +30,12 @@ func GetUserInfoById(ctx *gin.Context) {
 	if user.UserId == 0 {
 		// user not found
 		zap.L().Error("User not found", zap.Int32("userId", int32(userId)))
-		utils.ErrorWithCode(ctx, utils.CodeNotFound)
+		common.ErrorWithCode(ctx, common.CodeNotFound)
 		return
 	}
 
 	zap.L().Info("Get user info by id", zap.Any("user", user))
-	utils.OkWithData(ctx, user)
+	common.OkWithData(ctx, user)
 }
 
 // Register : 用户注册
@@ -51,9 +51,9 @@ func Register(ctx *gin.Context) {
 	var registerDTO dto.RegisterDTO
 	if err := ctx.ShouldBind(&registerDTO); err != nil {
 		// 参数校验失败
-		utils.ValidateError(ctx, err)
+		common.ValidateError(ctx, err)
 		return
 	}
 	// TODO 注册用户逻辑
-	utils.OkWithMsg(ctx, "注册成功")
+	common.OkWithMsg(ctx, "注册成功")
 }
