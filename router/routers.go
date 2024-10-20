@@ -40,6 +40,8 @@ func InitRouter() *gin.Engine {
 		RegisterUserRouter(api)
 		// Cos
 		RegisterCosRouter(api)
+		// 相册
+		RegisterAlbumRouter(api)
 	}
 
 	// 配置 Swagger UI
