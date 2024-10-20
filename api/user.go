@@ -17,8 +17,8 @@ import (
 // @Produce json
 // @Accept json
 // @Param userId query string true "用户ID"
-// @Success 0 {object} utils.Response{data=model.User} "成功响应"
-// @Failure 3 {object} utils.Response "失败响应"
+// @Success 0 {object} common.Response{data=model.User} "成功响应"
+// @Failure 3 {object} common.Response "失败响应"
 // @Router /user/one [get]
 func GetUserInfoById(ctx *gin.Context) {
 
@@ -45,7 +45,7 @@ func GetUserInfoById(ctx *gin.Context) {
 // @Produce json
 // @Accept json
 // @Param body body dto.RegisterDTO true "用户注册信息"
-// @Success 0 {object} utils.Response{data=string} "成功响应"
+// @Success 0 {object} common.Response{data=string} "成功响应"
 // @Router /user/register [post]
 func Register(ctx *gin.Context) {
 	var registerDTO dto.RegisterDTO
@@ -54,6 +54,26 @@ func Register(ctx *gin.Context) {
 		common.ValidateError(ctx, err)
 		return
 	}
-	// TODO 注册用户逻辑
+	// 注册用户逻辑
+	business.Register(registerDTO)
 	common.OkWithMsg(ctx, "注册成功")
+}
+
+// Login : 用户登录
+// @Summary 用户登录
+// @Description 用户登录
+// @Tags 用户模块
+// @Produce json
+// @Accept json
+// @Param body body dto.LoginDTO true "用户登录信息"
+// @Success 0 {object} common.Response{data=string} "成功响应"
+// @Router /user/login [post]
+func Login(ctx *gin.Context) {
+	var loginDTO dto.LoginDTO
+	if err := ctx.ShouldBindJSON(&loginDTO); err != nil {
+		common.ValidateError(ctx, err)
+		return
+	}
+	token := business.Login(loginDTO, ctx)
+	common.OkWithData(ctx, token)
 }
