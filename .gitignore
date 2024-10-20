@@ -7,3 +7,7 @@ config/config-*.yaml
 runtime/
 
 docs/
+
+email/
+
+assets/
