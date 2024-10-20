@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
+	"time"
 )
 
 var Conf = new(AppConfig)
@@ -14,6 +15,7 @@ type AppConfig struct {
 	*MysqlConfig     `mapstructure:"mysql"`
 	*RedisConfig     `mapstructure:"redis"`
 	*SnowflakeConfig `mapstructure:"snowflake"`
+	*AuthConfig      `mapstructure:"auth"`
 }
 
 type ServerConfig struct {
@@ -21,6 +23,11 @@ type ServerConfig struct {
 	Port    int    `mapstructure:"port"`
 	Profile string `mapstructure:"profile"`
 	Version string `mapstructure:"version"`
+}
+
+type AuthConfig struct {
+	JwtExpire time.Duration `mapstructure:"jwt_expire"`
+	JwtSecret string        `mapstructure:"jwt_secret"`
 }
 
 type SnowflakeConfig struct {

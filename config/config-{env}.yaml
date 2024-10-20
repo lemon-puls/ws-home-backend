@@ -47,3 +47,10 @@ snowflake:
   start_time: "2024-10-19"
   # 机器ID
   machine_id: 1
+
+# 认证授权
+auth:
+  # 密钥
+  jwt_secret: "123456"
+  # 过期时间 单位：分钟
+  jwt_expire: 30
