@@ -83,6 +83,8 @@ func InitDB(conf *MysqlConfig) *gorm.DB {
 
 	//数据库迁移
 	db.AutoMigrate(&model.User{})
+	db.AutoMigrate(&model.Album{})
+	db.AutoMigrate(&model.AlbumImg{})
 
 	return db
 }
