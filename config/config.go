@@ -16,6 +16,7 @@ type AppConfig struct {
 	*RedisConfig     `mapstructure:"redis"`
 	*SnowflakeConfig `mapstructure:"snowflake"`
 	*AuthConfig      `mapstructure:"auth"`
+	*CosConfig       `mapstructure:"cos"`
 }
 
 type ServerConfig struct {
@@ -23,6 +24,12 @@ type ServerConfig struct {
 	Port    int    `mapstructure:"port"`
 	Profile string `mapstructure:"profile"`
 	Version string `mapstructure:"version"`
+}
+type CosConfig struct {
+	AccessKey string `mapstructure:"access_key"`
+	SecretKey string `mapstructure:"secret_key"`
+	Region    string `mapstructure:"region"`
+	Bucket    string `mapstructure:"bucket"`
 }
 
 type AuthConfig struct {

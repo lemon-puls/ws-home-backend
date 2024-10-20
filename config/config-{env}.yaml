@@ -54,3 +54,11 @@ auth:
   jwt_secret: "123456"
   # 过期时间 单位：分钟
   jwt_expire: 30
+# 腾讯云 COS（对象存储） 配置
+cos:
+  access_key: ""
+  secret_key: ""
+  #  地域
+  region: ""
+  # 存储桶名称
+  bucket: ""
