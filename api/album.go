@@ -8,6 +8,7 @@ import (
 	"ws-home-backend/config"
 	"ws-home-backend/dto"
 	"ws-home-backend/model"
+	"ws-home-backend/vo"
 )
 
 // AddAlbum : 添加相册
@@ -57,7 +58,7 @@ func AddAlbum(ctx *gin.Context) {
 // @Param name query string false "相册名称"
 // @Produce  json
 // @Accept  json
-// @Success 0 {object} common.Response{data=[]model.Album} "成功响应"
+// @Success 0 {object} common.Response{data=[]vo.AlbumVO} "成功响应"
 // @Router /album/list [get]
 func ListAlbum(ctx *gin.Context) {
 	var albumQueryDto dto.AlbumQueryDTO
@@ -66,5 +67,12 @@ func ListAlbum(ctx *gin.Context) {
 		return
 	}
 	albumList := business.ListAlbum(albumQueryDto)
-	common.OkWithData(ctx, albumList)
+	// 封装为 vo
+	var albumVos []vo.AlbumVO
+	for _, album := range albumList {
+		var albumVo vo.AlbumVO
+		copier.Copy(&albumVo, &album)
+		albumVos = append(albumVos, albumVo)
+	}
+	common.OkWithData(ctx, albumVos)
 }
