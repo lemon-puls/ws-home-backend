@@ -19,3 +19,8 @@ type AlbumQueryDTO struct {
 	UserId int64  `json:"user_id" form:"user_id"`
 	Name   string `json:"name" form:"name"`
 }
+
+type AddImgToAlbumDTO struct {
+	AlbumId int64    `json:"album_id"`
+	Urls    []string `json:"urls"`
+}

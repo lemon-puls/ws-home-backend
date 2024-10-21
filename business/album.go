@@ -27,3 +27,19 @@ func ListAlbum(queryDto dto.AlbumQueryDTO) *page.PageResult {
 	}
 	return paginate
 }
+
+func AddImgToAlbum(albumDTO dto.AddImgToAlbumDTO) {
+	db := config.GetDB()
+
+	albumImgs := make([]model.AlbumImg, 0)
+	for _, url := range albumDTO.Urls {
+		albumImg := model.AlbumImg{
+			Url:     url,
+			AlbumId: albumDTO.AlbumId,
+		}
+		albumImgs = append(albumImgs, albumImg)
+	}
+	if err := db.Create(&albumImgs).Error; err != nil {
+		panic(err)
+	}
+}

@@ -82,3 +82,24 @@ func ListAlbum(ctx *gin.Context) {
 
 	common.OkWithData(ctx, pageRes)
 }
+
+// AddImgToAlbum : 添加图片到相册
+// @Summary 添加图片到相册
+// @Description 添加图片到相册
+// @Tags 相册功能
+// @Param body body dto.AddImgToAlbumDTO true "图片信息"
+// @Produce  json
+// @Accept  json
+// @Success 0 {object} common.Response{data=string} "成功响应"
+// @Router /album/img [post]
+func AddImgToAlbum(ctx *gin.Context) {
+
+	var addImgToAlbumDTO dto.AddImgToAlbumDTO
+	if err := ctx.ShouldBindJSON(&addImgToAlbumDTO); err != nil {
+		common.ErrorWithMsg(ctx, err.Error())
+		return
+	}
+
+	business.AddImgToAlbum(addImgToAlbumDTO)
+
+}
