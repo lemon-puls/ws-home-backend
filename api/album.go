@@ -54,7 +54,9 @@ func AddAlbum(ctx *gin.Context) {
 // @Tags 相册功能
 // @Param user_id query string false "用户ID"
 // @Param page query int true "页码"
-// @Param page_size query int true "每页数量"
+// @Param limit query int true "每页数量"
+// @Param order_by query string false "排序字段"
+// @Param order query string false "排序方式"
 // @Param name query string false "相册名称"
 // @Produce  json
 // @Accept  json
@@ -66,13 +68,17 @@ func ListAlbum(ctx *gin.Context) {
 		common.ValidateError(ctx, err)
 		return
 	}
-	albumList := business.ListAlbum(albumQueryDto)
+	pageRes := business.ListAlbum(albumQueryDto)
+	albums, _ := pageRes.Records.(*[]model.Album)
 	// 封装为 vo
 	var albumVos []vo.AlbumVO
-	for _, album := range albumList {
+	for _, album := range *albums {
 		var albumVo vo.AlbumVO
 		copier.Copy(&albumVo, &album)
 		albumVos = append(albumVos, albumVo)
 	}
-	common.OkWithData(ctx, albumVos)
+
+	pageRes.Records = &albumVos
+
+	common.OkWithData(ctx, pageRes)
 }
