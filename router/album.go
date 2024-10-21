@@ -9,5 +9,6 @@ func RegisterAlbumRouter(router *gin.RouterGroup) {
 	albumRouter := router.Group("/album")
 	{
 		albumRouter.POST("/", api.AddAlbum)
+		albumRouter.GET("/list", api.ListAlbum)
 	}
 }

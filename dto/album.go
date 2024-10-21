@@ -11,3 +11,10 @@ type AlbumAddDTO struct {
 type AlbumImgAddDTO struct {
 	Url string `json:"url"`
 }
+
+type AlbumQueryDTO struct {
+	UserId   int64  `json:"user_id" form:"user_id"`
+	Page     int    `json:"page" form:"page"`
+	PageSize int    `json:"page_size" form:"page_size"`
+	Name     string `json:"name" form:"name"`
+}
