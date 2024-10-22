@@ -3,7 +3,6 @@ package business
 import (
 	"context"
 	"github.com/gin-gonic/gin"
-	"strconv"
 	"time"
 	"ws-home-backend/common"
 	"ws-home-backend/common/jwt"
@@ -71,8 +70,7 @@ func Login(loginDTO dto.LoginDTO, ctx *gin.Context) interface{} {
 	}
 	//
 	var remoteIP = ctx.RemoteIP()
-	var key = common.KeyUserTokenPrefix +
-		strconv.FormatInt(user.UserId, 10) + ":" + remoteIP
+	var key = common.GetUserTokenKey(user.UserId, remoteIP)
 	config.RDB.Set(context.Background(), key, accessToken, config.Conf.JwtExpire*time.Minute)
 	return vo.Tokens{
 		AccessToken:  accessToken,

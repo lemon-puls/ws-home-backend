@@ -7,6 +7,7 @@ const (
 	CodeServerInternalError
 	CodeInvalidParams
 	CodeNotFound
+	CodeNotLogin
 )
 
 var MsgMap = map[Code]string{
@@ -14,6 +15,7 @@ var MsgMap = map[Code]string{
 	CodeServerInternalError: "server internal error",
 	CodeInvalidParams:       "invalid params",
 	CodeNotFound:            "not found",
+	CodeNotLogin:            "not login",
 }
 
 // code to msg
