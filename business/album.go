@@ -52,3 +52,12 @@ func RemoveImgFromAlbum(splits []string) {
 		panic(res.Error)
 	}
 }
+
+func GetAlbumById(id string) *model.Album {
+	db := config.GetDB()
+	album := &model.Album{}
+	if err := db.Preload("User").Preload("AlbumImgs").Take(album, id).Error; err != nil {
+		panic(err)
+	}
+	return album
+}

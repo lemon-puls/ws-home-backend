@@ -120,3 +120,24 @@ func RemoveImgFromAlbum(ctx *gin.Context) {
 	business.RemoveImgFromAlbum(splits)
 	common.OkWithMsg(ctx, "success")
 }
+
+// GetAlbumById : 获取相册详情
+// @Summary 获取相册详情
+// @Description 获取相册详情
+// @Tags 相册功能
+// @Param id path string true "相册ID"
+// @Produce  json
+// @Accept  json
+// @Success 0 {object} common.Response{data=vo.AlbumVO} "成功响应"
+// @Router /album/{id} [get]
+func GetAlbumById(ctx *gin.Context) {
+	id := ctx.Param("id")
+	if id == "" {
+		common.ErrorWithCodeAndMsg(ctx, common.CodeInvalidParams, "id is required")
+		return
+	}
+	album := business.GetAlbumById(id)
+	var albumVo vo.AlbumVO
+	copier.Copy(&albumVo, &album)
+	common.OkWithData(ctx, albumVo)
+}
