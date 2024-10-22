@@ -11,5 +11,6 @@ func RegisterAlbumRouter(router *gin.RouterGroup) {
 		albumRouter.POST("/", api.AddAlbum)
 		albumRouter.GET("/list", api.ListAlbum)
 		albumRouter.POST("/img", api.AddImgToAlbum)
+		albumRouter.DELETE("/img", api.RemoveImgFromAlbum)
 	}
 }

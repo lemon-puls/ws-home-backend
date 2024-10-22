@@ -3,6 +3,7 @@ package api
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/copier"
+	"strings"
 	"ws-home-backend/business"
 	"ws-home-backend/common"
 	"ws-home-backend/config"
@@ -102,4 +103,20 @@ func AddImgToAlbum(ctx *gin.Context) {
 
 	business.AddImgToAlbum(addImgToAlbumDTO)
 
+}
+
+// RemoveImgFromAlbum : 从相册中移除图片
+// @Summary 从相册中移除图片
+// @Description 从相册中移除图片
+// @Tags 相册功能
+// @Param ids query string true "相册ID"
+// @Produce  json
+// @Accept  json
+// @Success 0 {object} common.Response{data=string} "成功响应"
+// @Router /album/img [delete]
+func RemoveImgFromAlbum(ctx *gin.Context) {
+	ids := ctx.Query("ids")
+	splits := strings.Split(ids, ",")
+	business.RemoveImgFromAlbum(splits)
+	common.OkWithMsg(ctx, "success")
 }

@@ -43,3 +43,12 @@ func AddImgToAlbum(albumDTO dto.AddImgToAlbumDTO) {
 		panic(err)
 	}
 }
+
+func RemoveImgFromAlbum(splits []string) {
+	db := config.GetDB()
+
+	res := db.Where("id in (?)", splits).Delete(&model.AlbumImg{})
+	if res.Error != nil {
+		panic(res.Error)
+	}
+}
