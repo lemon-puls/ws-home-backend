@@ -6,10 +6,10 @@ import (
 )
 
 type BaseModel struct {
-	Id         int64      `gorm:"column:id;primary_key" json:"id"`
-	CreateTime time.Time  `gorm:"column:create_time" json:"create_time"`
-	UpdateTime time.Time  `gorm:"column:update_time" json:"update_time"`
-	DeleteTime *time.Time `gorm:"column:delete_time" json:"delete_time"`
+	Id         int64          `gorm:"column:id;primary_key" json:"id"`
+	CreateTime time.Time      `gorm:"column:create_time" json:"create_time"`
+	UpdateTime time.Time      `gorm:"column:update_time" json:"update_time"`
+	DeleteTime gorm.DeletedAt `gorm:"column:delete_time" json:"delete_time"`
 }
 
 // gorm 钩子函数，用于创建时间和更新时间的自动赋值
