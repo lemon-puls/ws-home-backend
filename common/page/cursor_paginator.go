@@ -150,7 +150,8 @@ func parseCursor(cursor string, cursorType reflect.Kind) interface{} {
 		return cursor
 	case reflect.Struct:
 		if cursorType == reflect.TypeOf(time.Time{}).Kind() {
-			if val, err := time.Parse("2006-01-02 15:04:05", cursor); err == nil {
+			location, _ := time.LoadLocation("Asia/Shanghai")
+			if val, err := time.ParseInLocation("2006-01-02 15:04:05.000", cursor, location); err == nil {
 				return val
 			}
 		}
@@ -177,7 +178,7 @@ func toCursor(value interface{}) string {
 		// 处理 time.Time 类型
 		if cursorValue.Type() == reflect.TypeOf(time.Time{}) {
 			t := cursorValue.Interface().(time.Time)
-			return t.Format(time.RFC3339)
+			return t.Format("2006-01-02 15:04:05.000")
 		}
 		return ""
 	default:
