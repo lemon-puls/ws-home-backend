@@ -24,3 +24,8 @@ type AddImgToAlbumDTO struct {
 	AlbumId int64    `json:"album_id"`
 	Urls    []string `json:"urls"`
 }
+
+type CursorListAlbumImgDTO struct {
+	page.CursorPageBaseRequest
+	AlbumId int64 `json:"album_id"`
+}

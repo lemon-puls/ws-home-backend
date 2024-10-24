@@ -141,3 +141,22 @@ func GetAlbumById(ctx *gin.Context) {
 	copier.Copy(&albumVo, &album)
 	common.OkWithData(ctx, albumVo)
 }
+
+// ListImgByAlbumId : 获取相册图片列表
+// @Summary 获取相册图片列表
+// @Description 获取相册图片列表
+// @Tags 相册功能
+// @Param body body dto.CursorListAlbumImgDTO true "查询条件"
+// @Produce  json
+// @Accept  json
+// @Success 0 {object} common.Response{data=[]vo.AlbumImgVO} "成功响应"
+// @Router /album/img/list [post]
+func ListImgByAlbumId(ctx *gin.Context) {
+	var queryRequest dto.CursorListAlbumImgDTO
+	if err := ctx.ShouldBindJSON(&queryRequest); err != nil {
+		common.ErrorWithCode(ctx, common.CodeInvalidParams)
+		return
+	}
+	albumImgs := business.ListImgByAlbumId(queryRequest)
+	common.OkWithData(ctx, albumImgs)
+}

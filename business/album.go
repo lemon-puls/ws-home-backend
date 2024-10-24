@@ -1,6 +1,7 @@
 package business
 
 import (
+	"gorm.io/gorm"
 	"ws-home-backend/common/page"
 	"ws-home-backend/config"
 	"ws-home-backend/dto"
@@ -60,4 +61,21 @@ func GetAlbumById(id string) *model.Album {
 		panic(err)
 	}
 	return album
+}
+
+func ListImgByAlbumId(queryRequest dto.CursorListAlbumImgDTO) *page.CursorPageBaseVO[model.AlbumImg] {
+	db := config.GetDB()
+	result, err := page.GetCursorPageByMySQL(db, queryRequest.CursorPageBaseRequest, func(db *gorm.DB) {
+		if queryRequest.AlbumId != 0 {
+			db.Where("album_id = ?", queryRequest.AlbumId)
+		}
+	}, func(u *model.AlbumImg) interface{} {
+		return &u.CreateTime
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	return result
+
 }
