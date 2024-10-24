@@ -3,11 +3,10 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 	"ws-home-backend/api"
-	"ws-home-backend/middleware"
 )
 
 func RegisterAlbumRouter(router *gin.RouterGroup) {
-	albumRouter := router.Group("/album", middleware.LoginRequired())
+	albumRouter := router.Group("/album")
 	{
 		albumRouter.POST("/", api.AddAlbum)
 		albumRouter.GET("/list", api.ListAlbum)
