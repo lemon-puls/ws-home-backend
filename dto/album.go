@@ -3,7 +3,8 @@ package dto
 import "ws-home-backend/common/page"
 
 type AlbumAddDTO struct {
-	UserId      int              `json:"user_id"`
+	Id          int64            `json:"id"`
+	UserId      int64            `json:"user_id"`
 	Name        string           `json:"name"`
 	Description string           `json:"description"`
 	CoverImg    string           `json:"cover_img"`
