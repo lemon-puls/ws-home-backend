@@ -18,3 +18,8 @@ func (b *BaseModel) BeforeCreate(tx *gorm.DB) (err error) {
 	b.UpdateTime = time.Now()
 	return nil
 }
+
+func (b *BaseModel) BeforeUpdate(tx *gorm.DB) (err error) {
+	b.UpdateTime = time.Now()
+	return nil
+}
