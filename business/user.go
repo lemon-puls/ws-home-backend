@@ -3,6 +3,7 @@ package business
 import (
 	"context"
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/copier"
 	"time"
 	"ws-home-backend/common"
 	"ws-home-backend/common/jwt"
@@ -72,9 +73,12 @@ func Login(loginDTO dto.LoginDTO, ctx *gin.Context) interface{} {
 	var remoteIP = ctx.RemoteIP()
 	var key = common.GetUserTokenKey(user.UserId, remoteIP)
 	config.RDB.Set(context.Background(), key, accessToken, config.Conf.JwtExpire*time.Minute)
+	var userVO vo.UserVO
+	copier.Copy(&userVO, user)
 	return vo.Tokens{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
+		UserVO:       userVO,
 	}
 }
 

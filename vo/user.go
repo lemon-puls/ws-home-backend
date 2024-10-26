@@ -5,6 +5,7 @@ import "ws-home-backend/model"
 type Tokens struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
+	UserVO       UserVO `json:"user_vo"`
 }
 
 type UserVO struct {

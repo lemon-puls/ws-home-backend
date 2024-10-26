@@ -66,7 +66,7 @@ func Register(ctx *gin.Context) {
 // @Produce json
 // @Accept json
 // @Param body body dto.LoginDTO true "用户登录信息"
-// @Success 0 {object} common.Response{data=string} "成功响应"
+// @Success 0 {object} common.Response{data=vo.Tokens} "成功响应"
 // @Router /user/login [post]
 func Login(ctx *gin.Context) {
 	var loginDTO dto.LoginDTO
