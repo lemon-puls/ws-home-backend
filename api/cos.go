@@ -54,13 +54,13 @@ func GetTempCredentials(ctx *gin.Context) {
 					},
 					// 开始构建生效条件 condition
 					// 关于 condition 的详细设置规则和COS支持的condition类型可以参考https://cloud.tencent.com/document/product/436/71306
-					Condition: map[string]map[string]interface{}{
-						"ip_equal": map[string]interface{}{
-							"qcs:ip": []string{
-								"",
-							},
-						},
-					},
+					//Condition: map[string]map[string]interface{}{
+					//	"ip_equal": map[string]interface{}{
+					//		"qcs:ip": []string{
+					//			"*",
+					//		},
+					//	},
+					//},
 				},
 			},
 		},
