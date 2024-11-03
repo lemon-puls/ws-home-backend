@@ -8,6 +8,7 @@ type Album struct {
 	CoverImg    string     `gorm:"type:varchar(255)" json:"cover_img"`
 	User        User       `gorm:"references:UserId" json:"user"`
 	AlbumImgs   []AlbumImg `gorm:"foreignkey:AlbumId;references:Id" json:"album_imgs"`
+	PhotoCount  int64      `gorm:"-" json:"photo_count"`
 }
 
 type AlbumImg struct {

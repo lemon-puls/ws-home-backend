@@ -1,11 +1,12 @@
 package business
 
 import (
-	"gorm.io/gorm"
 	"ws-home-backend/common/page"
 	"ws-home-backend/config"
 	"ws-home-backend/dto"
 	"ws-home-backend/model"
+
+	"gorm.io/gorm"
 )
 
 func ListAlbum(queryDto dto.AlbumQueryDTO) *page.PageResult {
@@ -21,10 +22,40 @@ func ListAlbum(queryDto dto.AlbumQueryDTO) *page.PageResult {
 	}
 
 	paginate, err := page.Paginate(query, queryDto.PageParam, &albums)
-
 	if err != nil {
 		panic(err)
 	}
+
+	// 获取分页结果中所有相册的ID
+	albumIds := make([]int64, 0)
+	for _, album := range albums {
+		albumIds = append(albumIds, album.Id)
+	}
+
+	// 查询这些相册的照片数量
+	var counts []struct {
+		AlbumId    int64 `gorm:"column:album_id"`
+		PhotoCount int64 `gorm:"column:photo_count"`
+	}
+
+	db.Model(&model.AlbumImg{}).
+		Select("album_id, count(*) as photo_count").
+		Where("album_id IN ?", albumIds).
+		Group("album_id").
+		Find(&counts)
+
+	// 构建相册ID到照片数量的映射
+	photoCountMap := make(map[int64]int64)
+	for _, count := range counts {
+		photoCountMap[count.AlbumId] = count.PhotoCount
+	}
+
+	// 将照片数量添加到相册对象中
+	for i := range albums {
+		albums[i].PhotoCount = photoCountMap[albums[i].Id]
+	}
+
+	paginate.Records = &albums
 	return paginate
 }
 

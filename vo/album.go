@@ -10,6 +10,7 @@ type AlbumVO struct {
 	CoverImg    string       `json:"cover_img"`
 	User        UserVO       `json:"user"`
 	AlbumImgs   []AlbumImgVO `json:"album_imgs"`
+	PhotoCount  int64        `json:"photo_count"`
 }
 
 type AlbumImgVO struct {
