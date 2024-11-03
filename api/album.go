@@ -1,8 +1,6 @@
 package api
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/copier"
 	"strings"
 	"ws-home-backend/business"
 	"ws-home-backend/common"
@@ -10,6 +8,9 @@ import (
 	"ws-home-backend/dto"
 	"ws-home-backend/model"
 	"ws-home-backend/vo"
+
+	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/copier"
 )
 
 // AddOrUpdateAlbum : 添加相册
@@ -46,7 +47,10 @@ func AddOrUpdateAlbum(ctx *gin.Context) {
 	} else {
 		// 更新
 		DB.Take(&album, "id = ?", albumDto.Id)
-		err := copier.Copy(&album, &albumDto)
+		err := copier.CopyWithOption(&album, &albumDto, copier.Option{
+			IgnoreEmpty: true,
+			DeepCopy:    true,
+		})
 		if err != nil {
 			common.ErrorWithMsg(ctx, err.Error())
 			return
