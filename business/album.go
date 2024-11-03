@@ -11,8 +11,7 @@ import (
 func ListAlbum(queryDto dto.AlbumQueryDTO) *page.PageResult {
 	db := config.GetDB()
 	albums := make([]model.Album, 0)
-	query := db.Preload("User").
-		Preload("AlbumImgs")
+	query := db.Preload("User")
 
 	if queryDto.UserId != 0 {
 		query = query.Where("user_id =?", queryDto.UserId)
