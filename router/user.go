@@ -14,5 +14,6 @@ func RegisterUserRouter(router *gin.RouterGroup) {
 		userRouter.POST("/register", api.Register)
 		userRouter.POST("/login", api.Login)
 		userRouter.PUT("", middleware.LoginRequired(), api.UpdateUser)
+		userRouter.GET("/current", middleware.LoginRequired(), api.GetCurrentUserInfo)
 	}
 }

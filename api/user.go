@@ -6,8 +6,10 @@ import (
 	"ws-home-backend/business"
 	"ws-home-backend/common"
 	"ws-home-backend/dto"
+	"ws-home-backend/vo"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/copier"
 	"go.uber.org/zap"
 )
 
@@ -99,4 +101,33 @@ func UpdateUser(ctx *gin.Context) {
 	userId := ctx.GetInt64("userId")
 	business.UpdateUser(userId, updateUserDTO)
 	common.OkWithMsg(ctx, "更新成功")
+}
+
+// GetCurrentUserInfo : 获取当前登录用户信息
+// @Summary 获取当前登录用户信息
+// @Description 获取当前登录用户的详细信息
+// @Tags 用户模块
+// @Produce json
+// @Success 0 {object} common.Response{data=vo.UserVO} "成功响应"
+// @Failure 3 {object} common.Response "失败响应"
+// @Router /user/current [get]
+func GetCurrentUserInfo(ctx *gin.Context) {
+	// 从上下文中获取用户ID
+	userId := ctx.GetInt64("userId")
+
+	// 通过用户ID获取用户信息
+	user := business.GetUserById(userId)
+
+	if user.UserId == 0 {
+		// 用户未找到
+		zap.L().Error("User not found", zap.Int64("userId", userId))
+		common.ErrorWithCode(ctx, common.CodeNotFound)
+		return
+	}
+
+	var userVO vo.UserVO
+	copier.Copy(&userVO, &user)
+
+	zap.L().Info("Get current user info", zap.Any("user", userVO))
+	common.OkWithData(ctx, userVO)
 }
