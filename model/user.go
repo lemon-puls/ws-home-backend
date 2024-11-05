@@ -9,5 +9,6 @@ type User struct {
 	Phone    string  `gorm:"type:varchar(255); not null" json:"phone"`
 	Gender   int8    `gorm:"type:tinyint" json:"gender"`
 	Age      int8    `gorm:"type:tinyint" json:"age"`
+	Avatar   string  `gorm:"type:varchar(255)" json:"avatar"`
 	Albums   []Album `gorm:"foreignkey:UserId;references:UserId" json:"albums"`
 }

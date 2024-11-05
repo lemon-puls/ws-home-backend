@@ -17,4 +17,5 @@ type UserVO struct {
 	Phone    string `json:"phone"`
 	Gender   int8   `json:"gender"`
 	Age      int8   `json:"age"`
+	Avatar   string `json:"avatar"`
 }

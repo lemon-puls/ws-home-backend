@@ -2,8 +2,6 @@ package business
 
 import (
 	"context"
-	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/copier"
 	"time"
 	"ws-home-backend/common"
 	"ws-home-backend/common/jwt"
@@ -32,6 +30,8 @@ func Register(dto dto.RegisterDTO) {
 		Username: dto.Username,
 		Password: common.Encode(dto.Password),
 		Phone:    dto.Phone,
+		// 默认头像 登陆后可以更换
+		Avatar: "https://p1-arco.byteimg.com/tos-cn-i-uwbnlip3yd/3ee5f13fb09879ecb5185e440cef6eb9.png~tplv-uwbnlip3yd-webp.webp",
 	}
 
 	res := db.Create(&user)
