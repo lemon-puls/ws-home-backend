@@ -9,6 +9,9 @@ import (
 	"ws-home-backend/dto"
 	"ws-home-backend/model"
 	"ws-home-backend/vo"
+
+	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/copier"
 )
 
 func GetUserById(userId int64) model.User {
@@ -96,4 +99,51 @@ func GetUserByUserId(userId int64) model.User {
 	var user model.User
 	db.Where(&model.User{UserId: userId}).Find(&user)
 	return user
+}
+
+func UpdateUser(userId int64, dto dto.UpdateUserDTO) {
+	db := config.GetDB()
+	user := GetUserByUserId(userId)
+	if user.UserId == 0 {
+		panic(common.NewCustomError(common.CodeNotFound))
+	}
+
+	// 检查手机号是否已被使用
+	if dto.Phone != "" && dto.Phone != user.Phone {
+		if isUserExists(dto.Phone) {
+			panic(common.NewCustomErrorWithMsg("手机号已被使用"))
+		}
+	}
+
+	// 如果要修改密码
+	if dto.OldPassword != "" && dto.NewPassword != "" {
+		if !common.Verify(dto.OldPassword, user.Password) {
+			panic(common.NewCustomErrorWithMsg("旧密码错误"))
+		}
+		user.Password = common.Encode(dto.NewPassword)
+	}
+
+	// 使用 copier 复制非空字段
+	if err := copier.CopyWithOption(&user, &dto, copier.Option{
+		IgnoreEmpty: true,
+		// 忽略密码字段
+		Converters: []copier.TypeConverter{
+			{
+				SrcType: string(""),
+				DstType: string(""),
+				Fn: func(src interface{}) (interface{}, error) {
+					if src == nil {
+						return nil, nil
+					}
+					return src, nil
+				},
+			},
+		},
+	}); err != nil {
+		panic(common.NewCustomErrorWithMsg("更新用户信息失败"))
+	}
+
+	if err := db.Save(&user).Error; err != nil {
+		panic(common.NewCustomErrorWithMsg("更新用户信息失败"))
+	}
 }

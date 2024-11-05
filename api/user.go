@@ -2,12 +2,13 @@ package api
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 	"strconv"
 	"ws-home-backend/business"
 	"ws-home-backend/common"
 	"ws-home-backend/dto"
+
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 // GetUserInfoById : 获取用户详情
@@ -76,4 +77,26 @@ func Login(ctx *gin.Context) {
 	}
 	token := business.Login(loginDTO, ctx)
 	common.OkWithData(ctx, token)
+}
+
+// UpdateUser : 更新用户信息
+// @Summary 更新用户信息
+// @Description 更新用户信息(包括密码)
+// @Tags 用户模块
+// @Accept json
+// @Produce json
+// @Param body body dto.UpdateUserDTO true "用户信息"
+// @Success 0 {object} common.Response{data=string} "成功响应"
+// @Router /user [put]
+func UpdateUser(ctx *gin.Context) {
+	var updateUserDTO dto.UpdateUserDTO
+	if err := ctx.ShouldBindJSON(&updateUserDTO); err != nil {
+		common.ValidateError(ctx, err)
+		return
+	}
+
+	// 从上下文获取当前用户ID
+	userId := ctx.GetInt64("userId")
+	business.UpdateUser(userId, updateUserDTO)
+	common.OkWithMsg(ctx, "更新成功")
 }
