@@ -38,6 +38,9 @@ func GetTempCredentials(ctx *gin.Context) {
 						// 简单上传
 						"name/cos:PostObject",
 						"name/cos:PutObject",
+						// 删除对象
+						"name/cos:DeleteObject",
+						// 管理对象
 						// 分片上传
 						"name/cos:InitiateMultipartUpload",
 						"name/cos:ListMultipartUploads",
