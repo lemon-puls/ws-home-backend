@@ -47,6 +47,14 @@ func AddOrUpdateAlbum(ctx *gin.Context) {
 	} else {
 		// 更新
 		DB.Take(&album, "id = ?", albumDto.Id)
+		// 从上下文获取当前用户ID
+		userId := ctx.GetInt64("userId")
+		// 检查相册所有者是否为当前用户
+		if album.UserId != userId {
+			common.ErrorWithMsg(ctx, "您没有权限修改此相册")
+			return
+		}
+
 		err := copier.CopyWithOption(&album, &albumDto, copier.Option{
 			IgnoreEmpty: true,
 			DeepCopy:    true,
