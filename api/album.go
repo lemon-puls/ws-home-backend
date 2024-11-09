@@ -1,6 +1,7 @@
 package api
 
 import (
+	"strconv"
 	"strings"
 	"ws-home-backend/business"
 	"ws-home-backend/common"
@@ -123,6 +124,14 @@ func AddImgToAlbum(ctx *gin.Context) {
 		common.ErrorWithMsg(ctx, err.Error())
 		return
 	}
+	// 从上下文获取当前用户ID
+	userId := ctx.GetInt64("userId")
+	// 检查相册所有者是否为当前用户
+	album := business.GetAlbumById(strconv.FormatInt(addImgToAlbumDTO.AlbumId, 10))
+	if album.UserId != userId {
+		common.ErrorWithMsg(ctx, "您没有权限修改此相册")
+		return
+	}
 
 	urlToId := business.AddImgToAlbum(addImgToAlbumDTO)
 	common.OkWithData(ctx, urlToId)
@@ -139,7 +148,38 @@ func AddImgToAlbum(ctx *gin.Context) {
 // @Router /album/img [delete]
 func RemoveImgFromAlbum(ctx *gin.Context) {
 	ids := ctx.Query("ids")
+	if ids == "" {
+		common.ErrorWithMsg(ctx, "ids不能为空")
+		return
+	}
+
+	// 从上下文获取当前用户ID
+	userId := ctx.GetInt64("userId")
+
 	splits := strings.Split(ids, ",")
+
+	// 获取第一张图片所属的相册信息
+	// TODO 这里假设所有图片都来自同一个相册，后续需要更严谨的鉴权再优化
+	db := config.GetDB()
+	var albumImg model.AlbumImg
+	if err := db.Where("id = ?", splits[0]).First(&albumImg).Error; err != nil {
+		common.ErrorWithMsg(ctx, "图片不存在")
+		return
+	}
+
+	// 查询相册信息
+	var album model.Album
+	if err := db.Where("id = ?", albumImg.AlbumId).First(&album).Error; err != nil {
+		common.ErrorWithMsg(ctx, "相册不存在")
+		return
+	}
+
+	// 检查相册是否属于当前用户
+	if album.UserId != userId {
+		common.ErrorWithMsg(ctx, "您没有权限删除此图片")
+		return
+	}
+
 	business.RemoveImgFromAlbum(splits)
 	common.OkWithMsg(ctx, "success")
 }
