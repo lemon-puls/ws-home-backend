@@ -59,7 +59,7 @@ func ListAlbum(queryDto dto.AlbumQueryDTO) *page.PageResult {
 	return paginate
 }
 
-func AddImgToAlbum(albumDTO dto.AddImgToAlbumDTO) {
+func AddImgToAlbum(albumDTO dto.AddImgToAlbumDTO) map[string]int64 {
 	db := config.GetDB()
 
 	albumImgs := make([]model.AlbumImg, 0)
@@ -73,6 +73,13 @@ func AddImgToAlbum(albumDTO dto.AddImgToAlbumDTO) {
 	if err := db.Create(&albumImgs).Error; err != nil {
 		panic(err)
 	}
+
+	// 创建 URL 到 ID 的映射
+	urlToId := make(map[string]int64)
+	for _, img := range albumImgs {
+		urlToId[img.Url] = img.Id
+	}
+	return urlToId
 }
 
 func RemoveImgFromAlbum(splits []string) {

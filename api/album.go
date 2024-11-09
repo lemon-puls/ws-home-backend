@@ -107,18 +107,17 @@ func ListAlbum(ctx *gin.Context) {
 // @Param body body dto.AddImgToAlbumDTO true "图片信息"
 // @Produce  json
 // @Accept  json
-// @Success 0 {object} common.Response{data=string} "成功响应"
+// @Success 0 {object} common.Response{data=map[string]int64} "成功响应"
 // @Router /album/img [post]
 func AddImgToAlbum(ctx *gin.Context) {
-
 	var addImgToAlbumDTO dto.AddImgToAlbumDTO
 	if err := ctx.ShouldBindJSON(&addImgToAlbumDTO); err != nil {
 		common.ErrorWithMsg(ctx, err.Error())
 		return
 	}
 
-	business.AddImgToAlbum(addImgToAlbumDTO)
-	common.OkWithMsg(ctx, "success")
+	urlToId := business.AddImgToAlbum(addImgToAlbumDTO)
+	common.OkWithData(ctx, urlToId)
 }
 
 // RemoveImgFromAlbum : 从相册中移除图片
