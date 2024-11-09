@@ -15,5 +15,5 @@ type AlbumImg struct {
 	BaseModel
 	AlbumId int64  `gorm:"not null;" json:"album_id"`
 	Url     string `gorm:"type:varchar(255); not null;" json:"url"`
-	Album   Album  `gorm:"references:Id" json:"album"`
+	//Album   Album  `gorm:"references:Id" json:"album"`
 }
