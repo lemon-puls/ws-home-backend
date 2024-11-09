@@ -118,7 +118,7 @@ func AddImgToAlbum(ctx *gin.Context) {
 	}
 
 	business.AddImgToAlbum(addImgToAlbumDTO)
-
+	common.OkWithMsg(ctx, "success")
 }
 
 // RemoveImgFromAlbum : 从相册中移除图片
