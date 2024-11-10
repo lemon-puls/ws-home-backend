@@ -94,6 +94,11 @@ func ListAlbum(ctx *gin.Context) {
 		common.ValidateError(ctx, err)
 		return
 	}
+
+	// 从上下文获取当前用户ID
+	userId := ctx.GetInt64("userId")
+	albumQueryDto.UserId = userId
+
 	pageRes := business.ListAlbum(albumQueryDto)
 	albums, _ := pageRes.Records.(*[]model.Album)
 	// 封装为 vo
@@ -199,7 +204,14 @@ func GetAlbumById(ctx *gin.Context) {
 		common.ErrorWithCodeAndMsg(ctx, common.CodeInvalidParams, "id is required")
 		return
 	}
+	// 从上下文获取当前用户ID
+	userId := ctx.GetInt64("userId")
 	album := business.GetAlbumById(id)
+	// 检查相册所有者是否为当前用户
+	if album.UserId != userId {
+		common.ErrorWithMsg(ctx, "您没有权限查看此相册")
+		return
+	}
 	var albumVo vo.AlbumVO
 	copier.Copy(&albumVo, &album)
 	common.OkWithData(ctx, albumVo)
@@ -218,6 +230,14 @@ func ListImgByAlbumId(ctx *gin.Context) {
 	var queryRequest dto.CursorListAlbumImgDTO
 	if err := ctx.ShouldBindJSON(&queryRequest); err != nil {
 		common.ErrorWithCode(ctx, common.CodeInvalidParams)
+		return
+	}
+	// 从上下文获取当前用户ID
+	userId := ctx.GetInt64("userId")
+	// 检查相册所有者是否为当前用户
+	album := business.GetAlbumById(strconv.FormatInt(queryRequest.AlbumId, 10))
+	if album.UserId != userId {
+		common.ErrorWithMsg(ctx, "您没有权限查看此相册")
 		return
 	}
 	albumImgs := business.ListImgByAlbumId(queryRequest)
