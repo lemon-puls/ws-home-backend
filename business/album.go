@@ -1,6 +1,7 @@
 package business
 
 import (
+	"ws-home-backend/common/cosutils"
 	"ws-home-backend/common/page"
 	"ws-home-backend/config"
 	"ws-home-backend/dto"
@@ -115,4 +116,58 @@ func ListImgByAlbumId(queryRequest dto.CursorListAlbumImgDTO) *page.CursorPageBa
 
 	return result
 
+}
+
+/**
+ * 删除相册
+ */
+func DeleteAlbum(id string) {
+	db := config.GetDB()
+
+	// 开启事务
+	tx := db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			panic(r)
+		}
+	}()
+
+	// 获取相册下的所有图片
+	var albumImgs []model.AlbumImg
+	if err := tx.Where("album_id = ?", id).Find(&albumImgs).Error; err != nil {
+		tx.Rollback()
+		panic(err)
+	}
+
+	// 删除 COS 上的图片
+	if len(albumImgs) > 0 {
+		var keys []string
+		for _, img := range albumImgs {
+			// 从完整 URL 中提取对象键名
+			key := cosutils.ExtractKeyFromUrl(img.Url)
+			keys = append(keys, key)
+		}
+
+		// 批量删除 COS 对象
+		if err := cosutils.DeleteCosObjects(keys); err != nil {
+			tx.Rollback()
+			panic(err)
+		}
+	}
+
+	// 删除相册图片记录
+	if err := tx.Where("album_id = ?", id).Delete(&model.AlbumImg{}).Error; err != nil {
+		tx.Rollback()
+		panic(err)
+	}
+
+	// 删除相册
+	if err := tx.Delete(&model.Album{}, id).Error; err != nil {
+		tx.Rollback()
+		panic(err)
+	}
+
+	// 提交事务
+	tx.Commit()
 }

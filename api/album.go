@@ -243,3 +243,38 @@ func ListImgByAlbumId(ctx *gin.Context) {
 	albumImgs := business.ListImgByAlbumId(queryRequest)
 	common.OkWithData(ctx, albumImgs)
 }
+
+// DeleteAlbum : 删除相册
+// @Summary 删除相册
+// @Description 删除相册及其所有照片
+// @Tags 相册功能
+// @Param id path string true "相册ID"
+// @Produce json
+// @Accept json
+// @Success 0 {object} common.Response{data=string} "成功响应"
+// @Router /album/{id} [delete]
+func DeleteAlbum(ctx *gin.Context) {
+	id := ctx.Param("id")
+	if id == "" {
+		common.ErrorWithCodeAndMsg(ctx, common.CodeInvalidParams, "id is required")
+		return
+	}
+
+	// 从上下文获取当前用户ID
+	userId := ctx.GetInt64("userId")
+	album := business.GetAlbumById(id)
+
+	if album.UserId == 0 {
+		common.ErrorWithMsg(ctx, "相册不存在")
+		return
+	}
+
+	// 检查相册所有者是否为当前用户
+	if album.UserId != userId {
+		common.ErrorWithMsg(ctx, "您没有权限删除此相册")
+		return
+	}
+
+	business.DeleteAlbum(id)
+	common.OkWithMsg(ctx, "删除成功")
+}
