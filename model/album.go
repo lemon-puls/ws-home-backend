@@ -1,11 +1,16 @@
 package model
 
+import (
+	"time"
+)
+
 type Album struct {
 	BaseModel
 	Name        string     `gorm:"type:varchar(255); not null;" json:"name"`
 	Description string     `gorm:"type:varchar(10000)" json:"description"`
 	UserId      int64      `gorm:"not null;" json:"user_id"`
 	CoverImg    string     `gorm:"type:varchar(255)" json:"cover_img"`
+	StartTime   time.Time  `gorm:"type:date" json:"start_time"`
 	User        User       `gorm:"references:UserId" json:"user"`
 	AlbumImgs   []AlbumImg `gorm:"foreignkey:AlbumId;references:Id" json:"album_imgs"`
 	PhotoCount  int64      `gorm:"-" json:"photo_count"`

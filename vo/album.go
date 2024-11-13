@@ -1,6 +1,9 @@
 package vo
 
-import "ws-home-backend/model"
+import (
+	"time"
+	"ws-home-backend/model"
+)
 
 type AlbumVO struct {
 	model.BaseModel
@@ -8,6 +11,7 @@ type AlbumVO struct {
 	Description string       `json:"description"`
 	UserId      int64        `json:"user_id"`
 	CoverImg    string       `json:"cover_img"`
+	StartTime   time.Time    `json:"start_time"`
 	User        UserVO       `json:"user"`
 	AlbumImgs   []AlbumImgVO `json:"album_imgs"`
 	PhotoCount  int64        `json:"photo_count"`
