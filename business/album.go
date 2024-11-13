@@ -21,6 +21,12 @@ func ListAlbum(queryDto dto.AlbumQueryDTO) *page.PageResult {
 	if queryDto.Name != "" {
 		query = query.Where("name like ?", "%"+queryDto.Name+"%")
 	}
+	if queryDto.StartTime != nil {
+		query = query.Where("start_time >= ?", queryDto.StartTime)
+	}
+	if queryDto.EndTime != nil {
+		query = query.Where("start_time <= ?", queryDto.EndTime)
+	}
 
 	paginate, err := page.Paginate(query, queryDto.PageParam, &albums)
 	if err != nil {
