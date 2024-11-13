@@ -17,4 +17,5 @@ type AlbumImgVO struct {
 	model.BaseModel
 	AlbumId int64  `gorm:"not null;" json:"album_id"`
 	Url     string `gorm:"type:varchar(255); not null;" json:"url"`
+	IsRaw   bool   `json:"is_raw"`
 }
