@@ -68,6 +68,7 @@ func AddImgToAlbum(albumDTO dto.AddImgToAlbumDTO) map[string]int64 {
 		albumImg := model.AlbumImg{
 			Url:     url,
 			AlbumId: albumDTO.AlbumId,
+			IsRaw:   albumDTO.IsRaw,
 		}
 		albumImgs = append(albumImgs, albumImg)
 	}
@@ -106,6 +107,10 @@ func ListImgByAlbumId(queryRequest dto.CursorListAlbumImgDTO) *page.CursorPageBa
 	result, err := page.GetCursorPageByMySQL(db, queryRequest.CursorPageBaseRequest, func(db *gorm.DB) {
 		if queryRequest.AlbumId != 0 {
 			db.Where("album_id = ?", queryRequest.AlbumId)
+		}
+		if queryRequest.IsRaw != nil {
+			// 使用 *queryRequest.IsRaw 获取具体的布尔值
+			db.Where("is_raw = ?", *queryRequest.IsRaw)
 		}
 	}, func(u *model.AlbumImg) interface{} {
 		return &u.CreateTime
