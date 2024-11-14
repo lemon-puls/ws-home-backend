@@ -1,9 +1,10 @@
 package router
 
 import (
-	"github.com/gin-gonic/gin"
 	"ws-home-backend/api"
 	"ws-home-backend/middleware"
+
+	"github.com/gin-gonic/gin"
 )
 
 func RegisterAlbumRouter(router *gin.RouterGroup) {
@@ -16,5 +17,6 @@ func RegisterAlbumRouter(router *gin.RouterGroup) {
 		albumRouter.GET("/:id", api.GetAlbumById)
 		albumRouter.POST("/img/list", api.ListImgByAlbumId)
 		albumRouter.DELETE("/:id", api.DeleteAlbum)
+		albumRouter.POST("/img/size", api.UpdateImgSize)
 	}
 }
