@@ -118,7 +118,7 @@ func ListAlbum(ctx *gin.Context) {
 // @Summary 添加图片到相册
 // @Description 添加图片到相册
 // @Tags 相册功能
-// @Param body body dto.AddImgToAlbumDTO true "图片信息"
+// @Param body body dto.AddImgToAlbumDTO true "图片信息(包含url、大小等)"
 // @Produce  json
 // @Accept  json
 // @Success 0 {object} common.Response{data=map[string]int64} "成功响应"
