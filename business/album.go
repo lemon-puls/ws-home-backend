@@ -8,6 +8,7 @@ import (
 	"ws-home-backend/config"
 	"ws-home-backend/dto"
 	"ws-home-backend/model"
+	"ws-home-backend/vo"
 
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -227,5 +228,31 @@ func UpdateAllImgSize() {
 				zap.Error(err))
 			continue
 		}
+	}
+}
+
+func GetUserAlbumStats(userId int64) *vo.AlbumStatsVO {
+	db := config.GetDB()
+
+	// 统计相册总数
+	var totalAlbums int64
+	db.Model(&model.Album{}).Where("user_id = ?", userId).Count(&totalAlbums)
+
+	// 统计照片总数和总大小
+	var result struct {
+		TotalPhotos int64   `json:"total_photos"`
+		TotalSize   float64 `json:"total_size"`
+	}
+
+	db.Model(&model.AlbumImg{}).
+		Select("COUNT(*) as total_photos, ROUND(SUM(size), 2) as total_size").
+		Joins("JOIN ws_album ON ws_album_img.album_id = ws_album.id").
+		Where("ws_album.user_id = ?", userId).
+		Scan(&result)
+
+	return &vo.AlbumStatsVO{
+		TotalAlbums: totalAlbums,
+		TotalPhotos: result.TotalPhotos,
+		TotalSize:   result.TotalSize,
 	}
 }

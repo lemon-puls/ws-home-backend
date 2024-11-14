@@ -24,3 +24,10 @@ type AlbumImgVO struct {
 	IsRaw   bool    `json:"is_raw"`
 	Size    float64 `json:"size"`
 }
+
+// AlbumStatsVO 相册统计信息
+type AlbumStatsVO struct {
+	TotalAlbums int64   `json:"totalAlbums"` // 总相册数
+	TotalPhotos int64   `json:"totalPhotos"` // 总照片数
+	TotalSize   float64 `json:"totalSize"`   // 总大小(MB)
+}

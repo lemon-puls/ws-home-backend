@@ -291,3 +291,18 @@ func UpdateImgSize(ctx *gin.Context) {
 	business.UpdateAllImgSize()
 	common.OkWithMsg(ctx, "更新成功")
 }
+
+// GetUserAlbumStats : 获取用户相册统计信息
+// @Summary 获取用户相册统计信息
+// @Description 获取用户的总相册数、总照片数、总照片大小
+// @Tags 相册功能
+// @Produce json
+// @Accept json
+// @Success 0 {object} common.Response{data=vo.AlbumStatsVO} "成功响应"
+// @Router /album/stats [get]
+func GetUserAlbumStats(ctx *gin.Context) {
+	// 从上下文获取当前用户ID
+	userId := ctx.GetInt64("userId")
+	stats := business.GetUserAlbumStats(userId)
+	common.OkWithData(ctx, stats)
+}
