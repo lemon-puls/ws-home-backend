@@ -107,9 +107,18 @@ func RemoveImgFromAlbum(splits []string) {
 func GetAlbumById(id string) *model.Album {
 	db := config.GetDB()
 	album := &model.Album{}
-	if err := db.Preload("User").Preload("AlbumImgs").Take(album, id).Error; err != nil {
+	if err := db.Preload("User").Take(album, id).Error; err != nil {
 		panic(err)
 	}
+
+	// 单独查询相册的图片总大小
+	var totalSize float64
+	db.Model(&model.AlbumImg{}).
+		Select("ROUND(SUM(size), 2) as total_size").
+		Where("album_id = ?", id).
+		Scan(&totalSize)
+
+	album.TotalSize = totalSize
 	return album
 }
 

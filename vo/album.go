@@ -15,6 +15,7 @@ type AlbumVO struct {
 	User        UserVO       `json:"user"`
 	AlbumImgs   []AlbumImgVO `json:"album_imgs"`
 	PhotoCount  int64        `json:"photo_count"`
+	TotalSize   float64      `json:"total_size"`
 }
 
 type AlbumImgVO struct {
