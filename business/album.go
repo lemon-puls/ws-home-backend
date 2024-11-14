@@ -186,3 +186,46 @@ func DeleteAlbum(id string) {
 	// 提交事务
 	tx.Commit()
 }
+
+func UpdateAllImgSize() {
+	db := config.GetDB()
+	cosClient := config.GetCosClient()
+
+	// 获取所有图片记录
+	var albumImgs []model.AlbumImg
+	if err := db.Find(&albumImgs).Error; err != nil {
+		panic(err)
+	}
+
+	// 批量更新
+	for _, img := range albumImgs {
+		// 从URL中提取对象键名
+		key := cosutils.ExtractKeyFromUrl(img.Url)
+		if key == "" {
+			continue
+		}
+
+		// 获取对象属性
+		resp, err := cosClient.Object.Head(context.Background(), key, nil)
+		if err != nil {
+			zap.L().Error("获取对象属性失败",
+				zap.String("key", key),
+				zap.Error(err))
+			continue
+		}
+
+		// 获取Content-Length
+		size := resp.ContentLength
+		// 转换为MB并保留两位小数
+		sizeMB := float64(size) / 1024 / 1024
+		sizeMB = math.Round(sizeMB*100) / 100
+
+		// 更新数据库
+		if err := db.Model(&img).Update("size", sizeMB).Error; err != nil {
+			zap.L().Error("更新图片大小失败",
+				zap.String("key", key),
+				zap.Error(err))
+			continue
+		}
+	}
+}

@@ -278,3 +278,16 @@ func DeleteAlbum(ctx *gin.Context) {
 	business.DeleteAlbum(id)
 	common.OkWithMsg(ctx, "删除成功")
 }
+
+// UpdateImgSize : 更新所有图片大小
+// @Summary 更新所有图片大小
+// @Description 从COS获取并更新所有图片的实际大小(MB)
+// @Tags 相册功能
+// @Produce json
+// @Accept json
+// @Success 0 {object} common.Response{data=string} "成功响应"
+// @Router /album/img/size [post]
+func UpdateImgSize(ctx *gin.Context) {
+	business.UpdateAllImgSize()
+	common.OkWithMsg(ctx, "更新成功")
+}
