@@ -14,6 +14,7 @@ type Album struct {
 	User        User       `gorm:"references:UserId" json:"user"`
 	AlbumImgs   []AlbumImg `gorm:"foreignkey:AlbumId;references:Id" json:"album_imgs"`
 	PhotoCount  int64      `gorm:"-" json:"photo_count"`
+	TotalSize   float64    `gorm:"-" json:"total_size"`
 }
 
 type AlbumImg struct {
