@@ -1,12 +1,15 @@
 package business
 
 import (
+	"context"
+	"math"
 	"ws-home-backend/common/cosutils"
 	"ws-home-backend/common/page"
 	"ws-home-backend/config"
 	"ws-home-backend/dto"
 	"ws-home-backend/model"
 
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -70,11 +73,12 @@ func AddImgToAlbum(albumDTO dto.AddImgToAlbumDTO) map[string]int64 {
 	db := config.GetDB()
 
 	albumImgs := make([]model.AlbumImg, 0)
-	for _, url := range albumDTO.Urls {
+	for _, img := range albumDTO.AlbumImgs {
 		albumImg := model.AlbumImg{
-			Url:     url,
+			Url:     img.Url,
 			AlbumId: albumDTO.AlbumId,
-			IsRaw:   albumDTO.IsRaw,
+			IsRaw:   img.IsRaw,
+			Size:    img.Size,
 		}
 		albumImgs = append(albumImgs, albumImg)
 	}

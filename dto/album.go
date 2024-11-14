@@ -16,8 +16,9 @@ type AlbumAddDTO struct {
 }
 
 type AlbumImgAddDTO struct {
-	Url   string `json:"url"`
-	IsRaw bool   `json:"is_raw"`
+	Url   string  `json:"url"`
+	IsRaw bool    `json:"is_raw"`
+	Size  float64 `json:"size"`
 }
 
 type AlbumQueryDTO struct {
@@ -29,9 +30,8 @@ type AlbumQueryDTO struct {
 }
 
 type AddImgToAlbumDTO struct {
-	AlbumId int64    `json:"album_id"`
-	Urls    []string `json:"urls"`
-	IsRaw   bool     `json:"is_raw"`
+	AlbumId   int64            `json:"album_id"`
+	AlbumImgs []AlbumImgAddDTO `json:"album_imgs"`
 }
 
 type CursorListAlbumImgDTO struct {
