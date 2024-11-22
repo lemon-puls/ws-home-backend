@@ -12,12 +12,12 @@ func RegisterAlbumRouter(router *gin.RouterGroup) {
 	{
 		albumRouter.POST("", api.AddOrUpdateAlbum)
 		albumRouter.GET("/list", api.ListAlbum)
-		albumRouter.POST("/img", api.AddImgToAlbum)
-		albumRouter.DELETE("/img", api.RemoveImgFromAlbum)
+		albumRouter.POST("/media", api.AddMediaToAlbum)
+		albumRouter.DELETE("/media", api.RemoveMediaFromAlbum)
 		albumRouter.GET("/:id", api.GetAlbumById)
-		albumRouter.POST("/img/list", api.ListImgByAlbumId)
+		albumRouter.POST("/media/list", api.ListMediaByAlbumId)
 		albumRouter.DELETE("/:id", api.DeleteAlbum)
-		albumRouter.POST("/img/size", api.UpdateImgSize)
+		albumRouter.POST("/media/size", api.UpdateMediaSize)
 		albumRouter.GET("/stats", api.GetUserAlbumStats)
 	}
 }

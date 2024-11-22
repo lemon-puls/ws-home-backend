@@ -64,7 +64,7 @@ func AddOrUpdateAlbum(ctx *gin.Context) {
 			common.ErrorWithMsg(ctx, err.Error())
 			return
 		}
-		album.AlbumImgs = nil
+		album.Medias = nil
 	}
 	res1 := DB.Save(&album)
 	if res1.RowsAffected == 0 {
@@ -114,35 +114,34 @@ func ListAlbum(ctx *gin.Context) {
 	common.OkWithData(ctx, pageRes)
 }
 
-// AddImgToAlbum : 添加图片到相册
+// AddMediaToAlbum : 添加图片到相册
 // @Summary 添加图片到相册
 // @Description 添加图片到相册
 // @Tags 相册功能
-// @Param body body dto.AddImgToAlbumDTO true "图片信息(包含url、大小等)"
+// @Param body body dto.AddMediaToAlbumDTO true "图片信息(包含url、大小等)"
 // @Produce  json
 // @Accept  json
 // @Success 0 {object} common.Response{data=map[string]int64} "成功响应"
-// @Router /album/img [post]
-func AddImgToAlbum(ctx *gin.Context) {
-	var addImgToAlbumDTO dto.AddImgToAlbumDTO
-	if err := ctx.ShouldBindJSON(&addImgToAlbumDTO); err != nil {
+// @Router /album/media [post]
+func AddMediaToAlbum(ctx *gin.Context) {
+	var addMediaToAlbumDTO dto.AddMediaToAlbumDTO
+	if err := ctx.ShouldBindJSON(&addMediaToAlbumDTO); err != nil {
 		common.ErrorWithMsg(ctx, err.Error())
 		return
 	}
 	// 从上下文获取当前用户ID
 	userId := ctx.GetInt64("userId")
 	// 检查相册所有者是否为当前用户
-	album := business.GetAlbumById(strconv.FormatInt(addImgToAlbumDTO.AlbumId, 10))
+	album := business.GetAlbumById(strconv.FormatInt(addMediaToAlbumDTO.AlbumId, 10))
 	if album.UserId != userId {
 		common.ErrorWithMsg(ctx, "您没有权限修改此相册")
 		return
 	}
 
-	urlToId := business.AddImgToAlbum(addImgToAlbumDTO)
+	urlToId := business.AddMediaToAlbum(addMediaToAlbumDTO)
 	common.OkWithData(ctx, urlToId)
 }
-
-// RemoveImgFromAlbum : 从相册中移除图片
+// RemoveMediaFromAlbum : 从相册中移除图片
 // @Summary 从相册中移除图片
 // @Description 从相册中移除图片
 // @Tags 相册功能
@@ -150,8 +149,8 @@ func AddImgToAlbum(ctx *gin.Context) {
 // @Produce  json
 // @Accept  json
 // @Success 0 {object} common.Response{data=string} "成功响应"
-// @Router /album/img [delete]
-func RemoveImgFromAlbum(ctx *gin.Context) {
+// @Router /album/media [delete]
+func RemoveMediaFromAlbum(ctx *gin.Context) {
 	ids := ctx.Query("ids")
 	if ids == "" {
 		common.ErrorWithMsg(ctx, "ids不能为空")
@@ -166,15 +165,15 @@ func RemoveImgFromAlbum(ctx *gin.Context) {
 	// 获取第一张图片所属的相册信息
 	// TODO 这里假设所有图片都来自同一个相册，后续需要更严谨的鉴权再优化
 	db := config.GetDB()
-	var albumImg model.AlbumImg
-	if err := db.Where("id = ?", splits[0]).First(&albumImg).Error; err != nil {
+	var albumMedia model.AlbumMedia
+	if err := db.Where("id = ?", splits[0]).First(&albumMedia).Error; err != nil {
 		common.ErrorWithMsg(ctx, "图片不存在")
 		return
 	}
 
 	// 查询相册信息
 	var album model.Album
-	if err := db.Where("id = ?", albumImg.AlbumId).First(&album).Error; err != nil {
+	if err := db.Where("id = ?", albumMedia.AlbumId).First(&album).Error; err != nil {
 		common.ErrorWithMsg(ctx, "相册不存在")
 		return
 	}
@@ -185,7 +184,7 @@ func RemoveImgFromAlbum(ctx *gin.Context) {
 		return
 	}
 
-	business.RemoveImgFromAlbum(splits)
+	business.RemoveMediaFromAlbum(splits)
 	common.OkWithMsg(ctx, "success")
 }
 
@@ -216,18 +215,17 @@ func GetAlbumById(ctx *gin.Context) {
 	copier.Copy(&albumVo, &album)
 	common.OkWithData(ctx, albumVo)
 }
-
-// ListImgByAlbumId : 获取相册图片列表
+// ListMediaByAlbumId : 获取相册图片列表
 // @Summary 获取相册图片列表
 // @Description 获取相册图片列表
 // @Tags 相册功能
-// @Param body body dto.CursorListAlbumImgDTO true "查询条件"
+// @Param body body dto.CursorListAlbumMediaDTO true "查询条件"
 // @Produce  json
 // @Accept  json
-// @Success 0 {object} common.Response{data=[]vo.AlbumImgVO} "成功响应"
-// @Router /album/img/list [post]
-func ListImgByAlbumId(ctx *gin.Context) {
-	var queryRequest dto.CursorListAlbumImgDTO
+// @Success 0 {object} common.Response{data=[]vo.AlbumMediaVO} "成功响应"
+// @Router /album/media/list [post]
+func ListMediaByAlbumId(ctx *gin.Context) {
+	var queryRequest dto.CursorListAlbumMediaDTO
 	if err := ctx.ShouldBindJSON(&queryRequest); err != nil {
 		common.ErrorWithCode(ctx, common.CodeInvalidParams)
 		return
@@ -240,8 +238,8 @@ func ListImgByAlbumId(ctx *gin.Context) {
 		common.ErrorWithMsg(ctx, "您没有权限查看此相册")
 		return
 	}
-	albumImgs := business.ListImgByAlbumId(queryRequest)
-	common.OkWithData(ctx, albumImgs)
+	albumMedias := business.ListMediaByAlbumId(queryRequest)
+	common.OkWithData(ctx, albumMedias)
 }
 
 // DeleteAlbum : 删除相册
@@ -279,16 +277,16 @@ func DeleteAlbum(ctx *gin.Context) {
 	common.OkWithMsg(ctx, "删除成功")
 }
 
-// UpdateImgSize : 更新所有图片大小
+// UpdateMediaSize : 更新所有图片大小
 // @Summary 更新所有图片大小
 // @Description 从COS获取并更新所有图片的实际大小(MB)
 // @Tags 相册功能
 // @Produce json
 // @Accept json
 // @Success 0 {object} common.Response{data=string} "成功响应"
-// @Router /album/img/size [post]
-func UpdateImgSize(ctx *gin.Context) {
-	business.UpdateAllImgSize()
+// @Router /album/media/size [post]
+func UpdateMediaSize(ctx *gin.Context) {
+	business.UpdateAllMediaSize()
 	common.OkWithMsg(ctx, "更新成功")
 }
 
