@@ -2,14 +2,15 @@ package config
 
 import (
 	"fmt"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
-	"gorm.io/gorm/schema"
 	"log"
 	"os"
 	"time"
 	"ws-home-backend/model"
+
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
+	"gorm.io/gorm/schema"
 )
 
 var DB *gorm.DB
@@ -84,7 +85,7 @@ func InitDB(conf *MysqlConfig) *gorm.DB {
 	//数据库迁移
 	db.AutoMigrate(&model.User{})
 	db.AutoMigrate(&model.Album{})
-	db.AutoMigrate(&model.AlbumImg{})
+	db.AutoMigrate(&model.AlbumMedia{})
 
 	return db
 }

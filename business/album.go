@@ -4,6 +4,7 @@ import (
 	"context"
 	"math"
 	"ws-home-backend/common/cosutils"
+	"ws-home-backend/common/mediautils"
 	"ws-home-backend/common/page"
 	"ws-home-backend/config"
 	"ws-home-backend/dto"
@@ -49,7 +50,7 @@ func ListAlbum(queryDto dto.AlbumQueryDTO) *page.PageResult {
 		PhotoCount int64 `gorm:"column:photo_count"`
 	}
 
-	db.Model(&model.AlbumImg{}).
+	db.Model(&model.AlbumMedia{}).
 		Select("album_id, count(*) as photo_count").
 		Where("album_id IN ?", albumIds).
 		Group("album_id").
@@ -70,35 +71,37 @@ func ListAlbum(queryDto dto.AlbumQueryDTO) *page.PageResult {
 	return paginate
 }
 
-func AddImgToAlbum(albumDTO dto.AddImgToAlbumDTO) map[string]int64 {
+func AddMediaToAlbum(albumDTO dto.AddMediaToAlbumDTO) map[string]int64 {
 	db := config.GetDB()
 
-	albumImgs := make([]model.AlbumImg, 0)
-	for _, img := range albumDTO.AlbumImgs {
-		albumImg := model.AlbumImg{
-			Url:     img.Url,
+	medias := make([]model.AlbumMedia, 0)
+	for _, media := range albumDTO.Medias {
+		mediaType := mediautils.GetMediaType(media.Url)
+		albumMedia := model.AlbumMedia{
+			Url:     media.Url,
 			AlbumId: albumDTO.AlbumId,
-			IsRaw:   img.IsRaw,
-			Size:    img.Size,
+			Type:    mediaType,
+			IsRaw:   media.IsRaw,
+			Size:    media.Size,
 		}
-		albumImgs = append(albumImgs, albumImg)
+		medias = append(medias, albumMedia)
 	}
-	if err := db.Create(&albumImgs).Error; err != nil {
+
+	if err := db.Create(&medias).Error; err != nil {
 		panic(err)
 	}
 
-	// 创建 URL 到 ID 的映射
 	urlToId := make(map[string]int64)
-	for _, img := range albumImgs {
-		urlToId[img.Url] = img.Id
+	for _, media := range medias {
+		urlToId[media.Url] = media.Id
 	}
 	return urlToId
 }
 
-func RemoveImgFromAlbum(splits []string) {
+func RemoveMediaFromAlbum(splits []string) {
 	db := config.GetDB()
 
-	res := db.Where("id in (?)", splits).Delete(&model.AlbumImg{})
+	res := db.Where("id in (?)", splits).Delete(&model.AlbumMedia{})
 	if res.Error != nil {
 		panic(res.Error)
 	}
@@ -113,16 +116,25 @@ func GetAlbumById(id string) *model.Album {
 
 	// 单独查询相册的图片总大小
 	var totalSize float64
-	db.Model(&model.AlbumImg{}).
+	db.Model(&model.AlbumMedia{}).
 		Select("ROUND(SUM(size), 2) as total_size").
 		Where("album_id = ?", id).
 		Scan(&totalSize)
 
 	album.TotalSize = totalSize
+
+	// 单独查询相册总图片数
+	var photoCount int64
+	db.Model(&model.AlbumMedia{}).
+		Where("album_id = ?", id).
+		Count(&photoCount)
+
+	album.PhotoCount = photoCount
+
 	return album
 }
 
-func ListImgByAlbumId(queryRequest dto.CursorListAlbumImgDTO) *page.CursorPageBaseVO[model.AlbumImg] {
+func ListMediaByAlbumId(queryRequest dto.CursorListAlbumMediaDTO) *page.CursorPageBaseVO[model.AlbumMedia] {
 	db := config.GetDB()
 	result, err := page.GetCursorPageByMySQL(db, queryRequest.CursorPageBaseRequest, func(db *gorm.DB) {
 		if queryRequest.AlbumId != 0 {
@@ -132,7 +144,7 @@ func ListImgByAlbumId(queryRequest dto.CursorListAlbumImgDTO) *page.CursorPageBa
 			// 使用 *queryRequest.IsRaw 获取具体的布尔值
 			db.Where("is_raw = ?", *queryRequest.IsRaw)
 		}
-	}, func(u *model.AlbumImg) interface{} {
+	}, func(u *model.AlbumMedia) interface{} {
 		return &u.CreateTime
 	})
 	if err != nil {
@@ -159,7 +171,7 @@ func DeleteAlbum(id string) {
 	}()
 
 	// 获取相册下的所有图片
-	var albumImgs []model.AlbumImg
+	var albumImgs []model.AlbumMedia
 	if err := tx.Where("album_id = ?", id).Find(&albumImgs).Error; err != nil {
 		tx.Rollback()
 		panic(err)
@@ -182,7 +194,7 @@ func DeleteAlbum(id string) {
 	}
 
 	// 删除相册图片记录
-	if err := tx.Where("album_id = ?", id).Delete(&model.AlbumImg{}).Error; err != nil {
+	if err := tx.Where("album_id = ?", id).Delete(&model.AlbumMedia{}).Error; err != nil {
 		tx.Rollback()
 		panic(err)
 	}
@@ -197,12 +209,12 @@ func DeleteAlbum(id string) {
 	tx.Commit()
 }
 
-func UpdateAllImgSize() {
+func UpdateAllMediaSize() {
 	db := config.GetDB()
 	cosClient := config.GetCosClient()
 
 	// 获取所有图片记录
-	var albumImgs []model.AlbumImg
+	var albumImgs []model.AlbumMedia
 	if err := db.Find(&albumImgs).Error; err != nil {
 		panic(err)
 	}
@@ -253,9 +265,9 @@ func GetUserAlbumStats(userId int64) *vo.AlbumStatsVO {
 		TotalSize   float64 `json:"total_size"`
 	}
 
-	db.Model(&model.AlbumImg{}).
+	db.Model(&model.AlbumMedia{}).
 		Select("COUNT(*) as total_photos, ROUND(SUM(size), 2) as total_size").
-		Joins("JOIN ws_album ON ws_album_img.album_id = ws_album.id").
+		Joins("JOIN ws_album ON ws_album_media.album_id = ws_album.id").
 		Where("ws_album.user_id = ?", userId).
 		Scan(&result)
 
