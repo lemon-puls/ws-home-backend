@@ -44,27 +44,34 @@ func ListAlbum(queryDto dto.AlbumQueryDTO) *page.PageResult {
 		albumIds = append(albumIds, album.Id)
 	}
 
-	// 查询这些相册的照片数量
+	// 查询这些相册的照片和视频数量
 	var counts []struct {
 		AlbumId    int64 `gorm:"column:album_id"`
-		PhotoCount int64 `gorm:"column:photo_count"`
+		Type       int8  `gorm:"column:type"`
+		MediaCount int64 `gorm:"column:media_count"`
 	}
 
 	db.Model(&model.AlbumMedia{}).
-		Select("album_id, count(*) as photo_count").
+		Select("album_id, type, count(*) as media_count").
 		Where("album_id IN ?", albumIds).
-		Group("album_id").
+		Group("album_id, type").
 		Find(&counts)
 
-	// 构建相册ID到照片数量的映射
+	// 构建相册ID到照片和视频数量的映射
 	photoCountMap := make(map[int64]int64)
+	videoCountMap := make(map[int64]int64)
 	for _, count := range counts {
-		photoCountMap[count.AlbumId] = count.PhotoCount
+		if count.Type == mediautils.MediaTypeImage {
+			photoCountMap[count.AlbumId] = count.MediaCount
+		} else {
+			videoCountMap[count.AlbumId] = count.MediaCount
+		}
 	}
 
-	// 将照片数量添加到相册对象中
+	// 将照片和视频数量添加到相册对象中
 	for i := range albums {
 		albums[i].PhotoCount = photoCountMap[albums[i].Id]
+		albums[i].VideoCount = videoCountMap[albums[i].Id]
 	}
 
 	paginate.Records = &albums
