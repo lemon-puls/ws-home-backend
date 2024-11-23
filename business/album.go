@@ -151,6 +151,9 @@ func ListMediaByAlbumId(queryRequest dto.CursorListAlbumMediaDTO) *page.CursorPa
 			// 使用 *queryRequest.IsRaw 获取具体的布尔值
 			db.Where("is_raw = ?", *queryRequest.IsRaw)
 		}
+		if queryRequest.Type != nil {
+			db.Where("type = ?", *queryRequest.Type)
+		}
 	}, func(u *model.AlbumMedia) interface{} {
 		return &u.CreateTime
 	})
