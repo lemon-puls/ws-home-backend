@@ -130,13 +130,18 @@ func GetAlbumById(id string) *model.Album {
 
 	album.TotalSize = totalSize
 
-	// 单独查询相册总图片数
-	var photoCount int64
+	// 单独查询相册的图片数和视频数
+	var photoCount, videoCount int64
 	db.Model(&model.AlbumMedia{}).
-		Where("album_id = ?", id).
+		Where("album_id = ? AND type = ?", id, mediautils.MediaTypeImage).
 		Count(&photoCount)
 
+	db.Model(&model.AlbumMedia{}).
+		Where("album_id = ? AND type = ?", id, mediautils.MediaTypeVideo).
+		Count(&videoCount)
+
 	album.PhotoCount = photoCount
+	album.VideoCount = videoCount
 
 	return album
 }
