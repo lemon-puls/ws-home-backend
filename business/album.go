@@ -257,23 +257,53 @@ func GetUserAlbumStats(userId int64) *vo.AlbumStatsVO {
 
 	// 统计相册总数
 	var totalAlbums int64
-	db.Model(&model.Album{}).Where("user_id = ?", userId).Count(&totalAlbums)
-
-	// 统计照片总数和总大小
-	var result struct {
-		TotalPhotos int64   `json:"total_photos"`
-		TotalSize   float64 `json:"total_size"`
+	if err := db.Model(&model.Album{}).Where("user_id = ?", userId).Count(&totalAlbums).Error; err != nil {
+		zap.L().Error("统计相册总数失败", zap.Error(err))
+		return &vo.AlbumStatsVO{}
 	}
 
-	db.Model(&model.AlbumMedia{}).
-		Select("COUNT(*) as total_photos, ROUND(SUM(size), 2) as total_size").
+	// 统计照片总数和总大小
+	type result struct {
+		Type      int8    `json:"type"`
+		Count     int64   `json:"count"`
+		TotalSize float64 `json:"total_size"`
+	}
+
+	var results []result
+	err := db.Model(&model.AlbumMedia{}).
+		Select("ws_album_media.type as type, COUNT(*) as count, ROUND(SUM(size), 2) as total_size").
 		Joins("JOIN ws_album ON ws_album_media.album_id = ws_album.id").
 		Where("ws_album.user_id = ?", userId).
-		Scan(&result)
+		Group("ws_album_media.type").
+		Scan(&results).Error
+
+	if err != nil {
+		zap.L().Error("统计媒体数据失败", zap.Error(err))
+		return &vo.AlbumStatsVO{TotalAlbums: totalAlbums}
+	}
+
+	// 如果没有任何媒体数据,直接返回
+	if len(results) == 0 {
+		return &vo.AlbumStatsVO{TotalAlbums: totalAlbums}
+	}
+
+	var totalPhotos, totalVideos int64
+	var totalSize float64
+
+	// 遍历结果并累加数据
+	for _, r := range results {
+		totalSize += r.TotalSize
+		if r.Type == mediautils.MediaTypeImage {
+			totalPhotos = r.Count
+		} else {
+			totalVideos = r.Count
+		}
+	}
 
 	return &vo.AlbumStatsVO{
 		TotalAlbums: totalAlbums,
-		TotalPhotos: result.TotalPhotos,
-		TotalSize:   result.TotalSize,
+		TotalPhotos: totalPhotos,
+		TotalVideos: totalVideos,
+		TotalSize:   totalSize,
 	}
 }

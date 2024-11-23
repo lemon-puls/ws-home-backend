@@ -32,4 +32,5 @@ type AlbumStatsVO struct {
 	TotalAlbums int64   `json:"totalAlbums"` // 总相册数
 	TotalPhotos int64   `json:"totalPhotos"` // 总照片数
 	TotalSize   float64 `json:"totalSize"`   // 总大小(MB)
+	TotalVideos int64   `json:"totalVideos"` // 总视频数
 }
