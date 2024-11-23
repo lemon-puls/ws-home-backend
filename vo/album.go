@@ -14,7 +14,8 @@ type AlbumVO struct {
 	StartTime   time.Time      `json:"start_time"`
 	User        UserVO         `json:"user"`
 	Medias      []AlbumMediaVO `json:"medias"`
-	MediaCount  int64          `json:"media_count"`
+	PhotoCount  int64          `json:"photo_count"`
+	VideoCount  int64          `json:"video_count"`
 	TotalSize   float64        `json:"total_size"`
 }
 
