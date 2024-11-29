@@ -147,3 +147,43 @@ func UpdateUser(userId int64, dto dto.UpdateUserDTO) {
 		panic(common.NewCustomErrorWithMsg("更新用户信息失败"))
 	}
 }
+
+func RefreshToken(refreshToken string, ctx *gin.Context) interface{} {
+	// 验证刷新令牌
+	claims, err := jwt.VerifyToken(refreshToken)
+	if err != nil {
+		panic(common.NewCustomError(common.CodeNotLogin))
+	}
+
+	// 获取用户信息
+	user := GetUserByUserId(claims.UserID)
+	if user.UserId == 0 {
+		panic(common.NewCustomError(common.CodeNotFound))
+	}
+
+	// 生成新的访问令牌
+	accessToken, err := jwt.AccessToken(user.UserId)
+	if err != nil {
+		panic(err)
+	}
+
+	// 生成新的刷新令牌
+	newRefreshToken, err := jwt.RefreshToken(user.UserId)
+	if err != nil {
+		panic(err)
+	}
+
+	// 更新 Redis 中的访问令牌
+	var remoteIP = ctx.RemoteIP()
+	var key = common.GetUserTokenKey(user.UserId, remoteIP)
+	config.RDB.Set(context.Background(), key, accessToken, config.Conf.JwtExpire*time.Minute)
+
+	var userVO vo.UserVO
+	copier.Copy(&userVO, user)
+
+	return vo.Tokens{
+		AccessToken:  accessToken,
+		RefreshToken: newRefreshToken,
+		UserVO:       userVO,
+	}
+}
