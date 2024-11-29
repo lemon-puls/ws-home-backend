@@ -131,3 +131,31 @@ func GetCurrentUserInfo(ctx *gin.Context) {
 	zap.L().Info("Get current user info", zap.Any("user", userVO))
 	common.OkWithData(ctx, userVO)
 }
+
+// RefreshToken : 刷新访问令牌
+// @Summary 刷新访问令牌
+// @Description 使用刷新令牌获取新的访问令牌
+// @Tags 用户模块
+// @Accept json
+// @Produce json
+// @Param Authorization header string true "Bearer 刷新令牌"
+// @Success 0 {object} common.Response{data=vo.Tokens} "成功响应"
+// @Router /user/refresh [post]
+func RefreshToken(ctx *gin.Context) {
+	// 从请求头获取刷新令牌
+	token := ctx.Request.Header.Get("Authorization")
+	if token == "" {
+		common.ErrorWithCode(ctx, common.CodeNotLogin)
+		return
+	}
+
+	//parts := strings.SplitN(token, " ", 2)
+	//if len(parts) != 2 || parts[0] != "Bearer" {
+	//	common.ErrorWithCode(ctx, common.CodeNotLogin)
+	//	return
+	//}
+
+	// 调用业务层处理刷新token
+	tokens := business.RefreshToken(token, ctx)
+	common.OkWithData(ctx, tokens)
+}
