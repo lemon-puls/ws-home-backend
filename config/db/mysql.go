@@ -1,15 +1,15 @@
-package config
+package db
 
 import (
 	"fmt"
-	"log"
-	"os"
 	"time"
+	"ws-home-backend/config"
+	"ws-home-backend/config/logging"
 	"ws-home-backend/model"
 
+	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
 )
 
@@ -34,7 +34,7 @@ func Paginate(page int, pageSize int) func(db *gorm.DB) *gorm.DB {
 	}
 }
 
-func InitDB(conf *MysqlConfig) *gorm.DB {
+func InitDB(conf *config.MysqlConfig) *gorm.DB {
 	username := conf.Username
 	password := conf.Password
 	host := conf.Host
@@ -50,15 +50,7 @@ func InitDB(conf *MysqlConfig) *gorm.DB {
 		database,
 	)
 	// gorm 日志配置
-	newLogger := logger.New(
-		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer（日志输出的目标，前缀和日志包含的内容——译者注）
-		logger.Config{
-			SlowThreshold:             time.Second, // 慢 SQL 阈值
-			LogLevel:                  logger.Info, // 日志级别
-			IgnoreRecordNotFoundError: true,        // 忽略ErrRecordNotFound（记录未找到）错误
-			Colorful:                  true,        // 彩色打印
-		},
-	)
+	newLogger := logging.NewGormLogger(zap.L())
 
 	// 打开数据库连接
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{

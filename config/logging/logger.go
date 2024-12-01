@@ -1,13 +1,14 @@
-package config
+package logging
 
 import (
 	"github.com/natefinch/lumberjack"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"os"
+	"ws-home-backend/config"
 )
 
-func InitLogger(logConfig *LogConfig, profile string) {
+func InitLogger(logConfig *config.LogConfig, profile string) {
 	writeSyncer := getLogWriter(logConfig.FileName, logConfig.MaxSize, logConfig.MaxBackups, logConfig.MaxAge)
 	encoder := getProdEncoder()
 	var l = new(zapcore.Level)

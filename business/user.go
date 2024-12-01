@@ -6,6 +6,7 @@ import (
 	"ws-home-backend/common"
 	"ws-home-backend/common/jwt"
 	"ws-home-backend/config"
+	"ws-home-backend/config/db"
 	"ws-home-backend/dto"
 	"ws-home-backend/model"
 	"ws-home-backend/vo"
@@ -15,14 +16,14 @@ import (
 )
 
 func GetUserById(userId int64) model.User {
-	db := config.GetDB()
+	db := db.GetDB()
 	var user model.User
 	db.Where(&model.User{UserId: userId}).Find(&user)
 	return user
 }
 
 func Register(dto dto.RegisterDTO) {
-	db := config.GetDB()
+	db := db.GetDB()
 
 	if isUserExists(dto.Phone) {
 		panic(common.NewCustomErrorWithMsg("User already exists"))
@@ -44,7 +45,7 @@ func Register(dto dto.RegisterDTO) {
 }
 
 func isUserExists(phone string) bool {
-	db := config.GetDB()
+	db := db.GetDB()
 	var user model.User
 	res := db.Where(&model.User{Phone: phone}).Find(&user)
 	if res.RowsAffected > 0 {
@@ -87,7 +88,7 @@ func Login(loginDTO dto.LoginDTO, ctx *gin.Context) interface{} {
 
 // 通过手机号查询用户
 func GetUserByPhone(phone string) model.User {
-	db := config.GetDB()
+	db := db.GetDB()
 	var user model.User
 	db.Where(&model.User{Phone: phone}).Find(&user)
 	return user
@@ -95,14 +96,14 @@ func GetUserByPhone(phone string) model.User {
 
 // 通过用户 ID 查询用户
 func GetUserByUserId(userId int64) model.User {
-	db := config.GetDB()
+	db := db.GetDB()
 	var user model.User
 	db.Where(&model.User{UserId: userId}).Find(&user)
 	return user
 }
 
 func UpdateUser(userId int64, dto dto.UpdateUserDTO) {
-	db := config.GetDB()
+	db := db.GetDB()
 	user := GetUserByUserId(userId)
 	if user.UserId == 0 {
 		panic(common.NewCustomError(common.CodeNotFound))

@@ -7,6 +7,7 @@ import (
 	"ws-home-backend/common/mediautils"
 	"ws-home-backend/common/page"
 	"ws-home-backend/config"
+	"ws-home-backend/config/db"
 	"ws-home-backend/dto"
 	"ws-home-backend/model"
 	"ws-home-backend/vo"
@@ -16,7 +17,7 @@ import (
 )
 
 func ListAlbum(queryDto dto.AlbumQueryDTO) *page.PageResult {
-	db := config.GetDB()
+	db := db.GetDB()
 	albums := make([]model.Album, 0)
 	query := db.Preload("User")
 
@@ -79,7 +80,7 @@ func ListAlbum(queryDto dto.AlbumQueryDTO) *page.PageResult {
 }
 
 func AddMediaToAlbum(albumDTO dto.AddMediaToAlbumDTO) map[string]int64 {
-	db := config.GetDB()
+	db := db.GetDB()
 
 	medias := make([]model.AlbumMedia, 0)
 	for _, media := range albumDTO.Medias {
@@ -106,7 +107,7 @@ func AddMediaToAlbum(albumDTO dto.AddMediaToAlbumDTO) map[string]int64 {
 }
 
 func RemoveMediaFromAlbum(splits []string) {
-	db := config.GetDB()
+	db := db.GetDB()
 
 	res := db.Where("id in (?)", splits).Delete(&model.AlbumMedia{})
 	if res.Error != nil {
@@ -115,7 +116,7 @@ func RemoveMediaFromAlbum(splits []string) {
 }
 
 func GetAlbumById(id string) *model.Album {
-	db := config.GetDB()
+	db := db.GetDB()
 	album := &model.Album{}
 	if err := db.Preload("User").Take(album, id).Error; err != nil {
 		panic(err)
@@ -147,7 +148,7 @@ func GetAlbumById(id string) *model.Album {
 }
 
 func ListMediaByAlbumId(queryRequest dto.CursorListAlbumMediaDTO) *page.CursorPageBaseVO[model.AlbumMedia] {
-	db := config.GetDB()
+	db := db.GetDB()
 	result, err := page.GetCursorPageByMySQL(db, queryRequest.CursorPageBaseRequest, func(db *gorm.DB) {
 		if queryRequest.AlbumId != 0 {
 			db.Where("album_id = ?", queryRequest.AlbumId)
@@ -174,7 +175,7 @@ func ListMediaByAlbumId(queryRequest dto.CursorListAlbumMediaDTO) *page.CursorPa
  * 删除相册
  */
 func DeleteAlbum(id string) {
-	db := config.GetDB()
+	db := db.GetDB()
 
 	// 开启事务
 	tx := db.Begin()
@@ -225,7 +226,7 @@ func DeleteAlbum(id string) {
 }
 
 func UpdateAllMediaSize() {
-	db := config.GetDB()
+	db := db.GetDB()
 	cosClient := config.GetCosClient()
 
 	// 获取所有图片记录
@@ -268,7 +269,7 @@ func UpdateAllMediaSize() {
 }
 
 func GetUserAlbumStats(userId int64) *vo.AlbumStatsVO {
-	db := config.GetDB()
+	db := db.GetDB()
 
 	// 统计相册总数
 	var totalAlbums int64

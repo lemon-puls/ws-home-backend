@@ -5,7 +5,7 @@ import (
 	"strings"
 	"ws-home-backend/business"
 	"ws-home-backend/common"
-	"ws-home-backend/config"
+	"ws-home-backend/config/db"
 	"ws-home-backend/dto"
 	"ws-home-backend/model"
 	"ws-home-backend/vo"
@@ -24,7 +24,7 @@ import (
 // @Success 0 {object} common.Response{data=string} "成功响应"
 // @Router /album [post]
 func AddOrUpdateAlbum(ctx *gin.Context) {
-	DB := config.GetDB()
+	DB := db.GetDB()
 	var albumDto dto.AlbumAddDTO
 	if err := ctx.ShouldBindJSON(&albumDto); err != nil {
 		common.ErrorWithMsg(ctx, err.Error())
@@ -141,6 +141,7 @@ func AddMediaToAlbum(ctx *gin.Context) {
 	urlToId := business.AddMediaToAlbum(addMediaToAlbumDTO)
 	common.OkWithData(ctx, urlToId)
 }
+
 // RemoveMediaFromAlbum : 从相册中移除图片
 // @Summary 从相册中移除图片
 // @Description 从相册中移除图片
@@ -164,7 +165,7 @@ func RemoveMediaFromAlbum(ctx *gin.Context) {
 
 	// 获取第一张图片所属的相册信息
 	// TODO 这里假设所有图片都来自同一个相册，后续需要更严谨的鉴权再优化
-	db := config.GetDB()
+	db := db.GetDB()
 	var albumMedia model.AlbumMedia
 	if err := db.Where("id = ?", splits[0]).First(&albumMedia).Error; err != nil {
 		common.ErrorWithMsg(ctx, "图片不存在")
@@ -215,6 +216,7 @@ func GetAlbumById(ctx *gin.Context) {
 	copier.Copy(&albumVo, &album)
 	common.OkWithData(ctx, albumVo)
 }
+
 // ListMediaByAlbumId : 获取相册图片列表
 // @Summary 获取相册图片列表
 // @Description 获取相册图片列表
