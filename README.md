@@ -1,4 +1,31 @@
 # WS HOME
+## 项目简介
+
+本项目是一个基于 Go 语言开发的相册管理系统后端服务。
+> [前往前端项目](https://github.com/lemon-puls/ws-home-backend)
+
+主要功能：
+
+- 用户管理：支持用户注册、登录、信息更新等基础功能，使用 JWT 进行身份认证
+- 相册管理：支持创建相册、上传照片和视频、删除媒体文件等功能
+- 对象存储：使用腾讯云 COS 对象存储服务来存储照片和视频文件
+- 数据统计：支持统计用户的相册数量、照片数量、存储空间使用情况等
+- API 文档：集成 Swagger 文档，方便接口调试和查看
+
+技术特点：
+
+- 使用 Gin 框架构建 RESTful API
+- 采用 GORM 作为 ORM 框架操作 MySQL 数据库
+- 集成 Redis 用于缓存和令牌管理
+- 使用雪花算法生成分布式 ID
+- 支持日志分割和多环境配置
+- 使用 Make 工具进行项目构建，支持跨平台编译
+
+项目遵循良好的工程实践，包括：
+- 统一的错误处理和响应格式
+- 请求参数验证和国际化
+- 中间件实现的日志记录和异常恢复
+- 支持优雅关闭和重启
 
 ## Swagger
 1. 执行以下命令生成 swagger 文档：
@@ -7,7 +34,7 @@ swag init
 ```
 2. 启动后端服务，访问 `http://localhost:8080/swagger/index.html` 即可查看 swagger 文档。
 
-> 使用文档：https://github.com/swaggo/swag/blob/master/README_zh-CN.md#%E5%A3%B0%E6%98%8E%E5%BC%8F%E6%B3%A8%E9%87%8A%E6%A0%BC%E5%BC%8F
+> [官方使用说明文档](https://github.com/swaggo/swag/blob/master/README_zh-CN.md#%E5%A3%B0%E6%98%8E%E5%BC%8F%E6%B3%A8%E9%87%8A%E6%A0%BC%E5%BC%8F)
 
 ## 部署
 1. 编译项目：
