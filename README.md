@@ -23,6 +23,11 @@ make linux
 [官网下载地址](https://sourceforge.net/projects/gnuwin32/files/make/3.81/make-3.81-bin.zip/download?use_mirror=zenlayer&download=)
 
 2. 把的可执行文件上传到服务器上
+在同一目录下创建指向可执行文件的软链接，命名为 ws-home-backend, 因为 app.sh 会根据这个名称来启动项目。
+```bash
+# 创建软链接
+ln -sf ws-home-backend_<替换为实际 git commit hash> ws-home-backend
+```
 3. 使用脚本启动项目
 把 script/app.sh 上传到服务器上, 和可执行文件放在同一目录下
 ```bash

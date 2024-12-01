@@ -3,6 +3,9 @@
 AppName=ws-home-backend
 AppPath="./${AppName}"
 
+# 确保目标文件具有可执行权限
+chmod +x "$AppName"
+
 if [ -z "$1" ]; then
   echo -e "\033[0;31m 未输入操作名 \033[0m  \033[0;34m {start|stop|restart|status} \033[0m"
   exit 1
