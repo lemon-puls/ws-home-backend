@@ -21,3 +21,20 @@ make linux
 ```
 > 安装 make:  
 [官网下载地址](https://sourceforge.net/projects/gnuwin32/files/make/3.81/make-3.81-bin.zip/download?use_mirror=zenlayer&download=)
+
+2. 把的可执行文件上传到服务器上
+3. 使用脚本启动项目
+把 script/app.sh 上传到服务器上, 和可执行文件放在同一目录下
+```bash
+# 赋予脚本执行权限
+chmod +x app.sh
+# 启动项目
+./app.sh start
+# 其他操作
+# 停止项目
+./app.sh stop
+# 重启项目
+./app.sh restart
+# 查看状态
+./app.sh status
+```
