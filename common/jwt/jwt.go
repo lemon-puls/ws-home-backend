@@ -50,7 +50,7 @@ func AccessToken(userId int64) (string, error) {
 }
 
 func RefreshToken(userId int64) (string, error) {
-	return generateToken(userId, 1*time.Hour)
+	return generateToken(userId, 7*24*time.Hour)
 }
 
 func VerifyToken(tokenString string) (*CustomClaims, error) {
