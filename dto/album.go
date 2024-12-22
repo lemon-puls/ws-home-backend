@@ -48,6 +48,7 @@ type MediaMetaDTO struct {
 	TakeTime  string `json:"takeTime,omitempty"`  // 拍摄时间
 	Latitude  string `json:"latitude,omitempty"`  // 位置信息 纬度
 	Longitude string `json:"longitude,omitempty"` // 位置信息 经度
+	Address   string `json:"address,omitempty"`   // 位置信息 地址(通过经纬度获取)
 	// 图片信息
 	Make         string `json:"make,omitempty"`         // 相机品牌
 	Model        string `json:"model,omitempty"`        // 相机型号

@@ -5,6 +5,7 @@ import (
 	"github.com/goccy/go-json"
 	"math"
 	"ws-home-backend/common/cosutils"
+	"ws-home-backend/common/maputils"
 	"ws-home-backend/common/mediautils"
 	"ws-home-backend/common/page"
 	"ws-home-backend/config"
@@ -85,13 +86,22 @@ func AddMediaToAlbum(albumDTO dto.AddMediaToAlbumDTO) map[string]int64 {
 
 	medias := make([]model.AlbumMedia, 0)
 	for _, media := range albumDTO.Medias {
+		// 通过经纬度获取相应地址信息
+		addressInfo, err := maputils.GetAddressFromLocation(media.Meta.Longitude, media.Meta.Latitude)
+		if err != nil {
+			zap.L().Error("Get address from location error", zap.Error(err))
+		} else {
+			media.Meta.Address = addressInfo.FormattedAddress
+		}
 		// 元数据转为 JSON 字符串落库
 		metaJson, err := json.Marshal(media.Meta)
 		if err != nil {
 			zap.L().Error("Media meta json marshal error", zap.Int64("album_id", albumDTO.AlbumId),
 				zap.String("url", media.Url), zap.Error(err))
 		}
+
 		mediaType := mediautils.GetMediaType(media.Url)
+
 		albumMedia := model.AlbumMedia{
 			Url:     media.Url,
 			AlbumId: albumDTO.AlbumId,
