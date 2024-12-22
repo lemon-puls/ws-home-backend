@@ -2,11 +2,13 @@ package page
 
 import (
 	"fmt"
-	"gorm.io/gorm"
 	"reflect"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/jinzhu/copier"
+	"gorm.io/gorm"
 )
 
 type CursorPageBaseRequest struct {
@@ -184,4 +186,20 @@ func toCursor(value interface{}) string {
 	default:
 		return ""
 	}
+}
+
+// ConvertCursorPageVO 将当前类型的分页数据转换为目标类型
+func ConvertCursorPageVO[T any, D any](p *CursorPageBaseVO[T]) (*CursorPageBaseVO[D], error) {
+	result := &CursorPageBaseVO[D]{
+		Cursor: p.Cursor,
+		IsLast: p.IsLast,
+		Data:   make([]D, len(p.Data)),
+	}
+
+	err := copier.Copy(&result.Data, &p.Data)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
