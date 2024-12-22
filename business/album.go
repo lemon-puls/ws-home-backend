@@ -2,6 +2,7 @@ package business
 
 import (
 	"context"
+	"github.com/goccy/go-json"
 	"math"
 	"ws-home-backend/common/cosutils"
 	"ws-home-backend/common/mediautils"
@@ -84,6 +85,12 @@ func AddMediaToAlbum(albumDTO dto.AddMediaToAlbumDTO) map[string]int64 {
 
 	medias := make([]model.AlbumMedia, 0)
 	for _, media := range albumDTO.Medias {
+		// 元数据转为 JSON 字符串落库
+		metaJson, err := json.Marshal(media.Meta)
+		if err != nil {
+			zap.L().Error("Media meta json marshal error", zap.Int64("album_id", albumDTO.AlbumId),
+				zap.String("url", media.Url), zap.Error(err))
+		}
 		mediaType := mediautils.GetMediaType(media.Url)
 		albumMedia := model.AlbumMedia{
 			Url:     media.Url,
@@ -91,6 +98,7 @@ func AddMediaToAlbum(albumDTO dto.AddMediaToAlbumDTO) map[string]int64 {
 			Type:    mediaType,
 			IsRaw:   media.IsRaw,
 			Size:    media.Size,
+			Meta:    string(metaJson),
 		}
 		medias = append(medias, albumMedia)
 	}

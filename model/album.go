@@ -25,4 +25,5 @@ type AlbumMedia struct {
 	Type    int8    `gorm:"type:tinyint;not null;default:0" json:"type"`
 	IsRaw   bool    `gorm:"type:tinyint(1);not null;default:0" json:"is_raw"`
 	Size    float64 `gorm:"type:decimal(10,2);not null;default:0" json:"size"`
+	Meta    string  `gorm:"type:json" json:"meta"`
 }
