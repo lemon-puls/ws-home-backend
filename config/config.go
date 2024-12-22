@@ -2,9 +2,10 @@ package config
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
-	"time"
 )
 
 var Conf = new(AppConfig)
@@ -17,6 +18,7 @@ type AppConfig struct {
 	*SnowflakeConfig `mapstructure:"snowflake"`
 	*AuthConfig      `mapstructure:"auth"`
 	*CosConfig       `mapstructure:"cos"`
+	*AmapConfig      `mapstructure:"amap"`
 }
 
 type ServerConfig struct {
@@ -65,6 +67,11 @@ type MysqlConfig struct {
 	Database     string `mapstructure:"database"`
 	MaxOpenConns int    `mapstructure:"max_open_conns"`
 	MaxIdleConns int    `mapstructure:"max_idle_conns"`
+}
+
+type AmapConfig struct {
+	Key      string `mapstructure:"key"`
+	RegeoURL string `mapstructure:"regeo_url"`
 }
 
 func InitConfig(path string) {

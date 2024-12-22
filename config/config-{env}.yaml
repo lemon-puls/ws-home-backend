@@ -62,3 +62,9 @@ cos:
   region: ""
   # 存储桶名称
   bucket: ""
+
+# 高德地图配置
+amap:
+  key: "your_amap_key"
+  # 逆地理编码接口地址
+  regeo_url: "https://restapi.amap.com/v3/geocode/regeo"
