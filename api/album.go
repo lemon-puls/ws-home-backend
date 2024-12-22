@@ -1,10 +1,13 @@
 package api
 
 import (
+	"github.com/goccy/go-json"
+	"go.uber.org/zap"
 	"strconv"
 	"strings"
 	"ws-home-backend/business"
 	"ws-home-backend/common"
+	"ws-home-backend/common/page"
 	"ws-home-backend/config/db"
 	"ws-home-backend/dto"
 	"ws-home-backend/model"
@@ -240,8 +243,31 @@ func ListMediaByAlbumId(ctx *gin.Context) {
 		common.ErrorWithMsg(ctx, "您没有权限查看此相册")
 		return
 	}
-	albumMedias := business.ListMediaByAlbumId(queryRequest)
-	common.OkWithData(ctx, albumMedias)
+	cursorPageVo := business.ListMediaByAlbumId(queryRequest)
+
+	// 封装为 vo
+	convertedCursorPageVo, err := page.ConvertCursorPageVO[model.AlbumMedia, vo.AlbumMediaVO](cursorPageVo)
+	if err != nil {
+		common.ErrorWithMsg(ctx, err.Error())
+		return
+	}
+	for i, media := range cursorPageVo.Data {
+		meta := media.Meta
+		var metaDto *dto.MediaMetaDTO
+		if meta != "" {
+			err := json.Unmarshal([]byte(meta), &metaDto)
+			if err != nil {
+				zap.L().Error("media meta json unmarshal failed",
+					zap.Int64("media_id", media.Id), zap.String("meta", meta), zap.Error(err))
+			} else {
+				convertedCursorPageVo.Data[i].Meta = metaDto
+			}
+		} else {
+			convertedCursorPageVo.Data[i].Meta = nil
+		}
+	}
+
+	common.OkWithData(ctx, convertedCursorPageVo)
 }
 
 // DeleteAlbum : 删除相册

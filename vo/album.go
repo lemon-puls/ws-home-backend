@@ -2,6 +2,7 @@ package vo
 
 import (
 	"time"
+	"ws-home-backend/dto"
 	"ws-home-backend/model"
 )
 
@@ -21,11 +22,12 @@ type AlbumVO struct {
 
 type AlbumMediaVO struct {
 	model.BaseModel
-	AlbumId int64   `json:"album_id"`
-	Url     string  `json:"url"`
-	Type    int8    `json:"type"`
-	IsRaw   bool    `json:"is_raw"`
-	Size    float64 `json:"size"`
+	AlbumId int64             `json:"album_id"`
+	Url     string            `json:"url"`
+	Type    int8              `json:"type"`
+	IsRaw   bool              `json:"is_raw"`
+	Size    float64           `json:"size"`
+	Meta    *dto.MediaMetaDTO `json:"meta"`
 }
 
 // AlbumStatsVO 相册统计信息
