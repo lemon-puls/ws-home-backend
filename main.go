@@ -4,12 +4,17 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"go.uber.org/zap"
+	"os"
+	"os/signal"
+	"syscall"
 	"ws-home-backend/config"
 	"ws-home-backend/config/db"
 	"ws-home-backend/config/logging"
 	_ "ws-home-backend/docs"
+	"ws-home-backend/email"
 	"ws-home-backend/router"
+
+	"go.uber.org/zap"
 )
 
 // @title WS Home Backend API
@@ -20,7 +25,6 @@ import (
 // @host localhost:8080
 // @BasePath /api
 func main() {
-
 	var configPath string
 	flag.StringVar(&configPath, "cfg", "./config/config.yaml", "配置文件路径")
 	flag.Parse()
@@ -43,8 +47,28 @@ func main() {
 	// 初始化 COS Client
 	config.InitCosClient(config.Conf.CosConfig)
 
-	r.Run(fmt.Sprintf(":%d", config.Conf.ServerConfig.Port))
+	// 初始化并启动定时问候邮件任务
+	morningGreeting := email.NewMorningGreeting(config.Conf.EmailConfig)
+	morningGreeting.StartScheduler()
+	zap.L().Info("Morning greeting scheduler started")
 
-	//config.RDB.Set(background, "test", "Go 使用 Redis", 0)
+	// 创建一个通道来接收系统信号
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+
+	// 启动服务器
+	go func() {
+		if err := r.Run(fmt.Sprintf(":%d", config.Conf.ServerConfig.Port)); err != nil {
+			zap.L().Fatal("Server failed to start", zap.Error(err))
+		}
+	}()
+
+	// 等待中断信号
+	<-quit
+	zap.L().Info("Shutting down server...")
+
+	// 停止定时任务
+	morningGreeting.StopScheduler()
+
 	zap.L().Info("Server exited", zap.String("profile", config.Conf.Profile))
 }

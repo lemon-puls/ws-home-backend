@@ -19,6 +19,7 @@ type AppConfig struct {
 	*AuthConfig      `mapstructure:"auth"`
 	*CosConfig       `mapstructure:"cos"`
 	*AmapConfig      `mapstructure:"amap"`
+	*EmailConfig     `mapstructure:"email"`
 }
 
 type ServerConfig struct {
@@ -27,6 +28,7 @@ type ServerConfig struct {
 	Profile string `mapstructure:"profile"`
 	Version string `mapstructure:"version"`
 }
+
 type CosConfig struct {
 	AccessKey string `mapstructure:"access_key"`
 	SecretKey string `mapstructure:"secret_key"`
@@ -72,6 +74,14 @@ type MysqlConfig struct {
 type AmapConfig struct {
 	Key      string `mapstructure:"key"`
 	RegeoURL string `mapstructure:"regeo_url"`
+}
+
+type EmailConfig struct {
+	FromEmail    string   `mapstructure:"from_email"`
+	FromPassword string   `mapstructure:"from_password"`
+	ToEmails     []string `mapstructure:"to_emails"`
+	SmtpServer   string   `mapstructure:"smtp_server"`
+	SmtpPort     int      `mapstructure:"smtp_port"`
 }
 
 func InitConfig(path string) {
