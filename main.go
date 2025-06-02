@@ -30,7 +30,7 @@ func main() {
 	background := context.Background()
 
 	// 初始化配置
-	config.InitConfig("./config/config-dev.yaml")
+	config.InitConfig(configPath)
 	// 初始化日志
 	logging.InitLogger(config.Conf.LogConfig, config.Conf.Profile)
 	zap.L().Info("Config initialized", zap.Any("config", config.Conf))
