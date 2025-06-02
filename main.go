@@ -12,6 +12,8 @@ import (
 	"ws-home-backend/router"
 )
 
+//go:generate swag init -g main.go -o docs
+
 // @title WS Home Backend API
 // @version 1.0
 // @description 这是 WS Home Backend 的 API 文档
