@@ -24,7 +24,7 @@ import (
 func main() {
 
 	var configPath string
-	flag.StringVar(&configPath, "cfg", "./config/config.yaml", "配置文件路径")
+	flag.StringVar(&configPath, "cfg", "./runtime/config.yaml", "配置文件路径")
 	flag.Parse()
 
 	background := context.Background()
