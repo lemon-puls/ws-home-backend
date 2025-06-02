@@ -29,6 +29,7 @@ docker run \
     -v ${RUNTIME_DIR}:/app/runtime \
     -p ${PORT}:8080 \
     -d \
+    --add-host=docker-host:host-gateway \
     --name ${CONTAINER_NAME} \
     --restart unless-stopped \
     ${IMAGE_REPO}/${IMAGE_NAME}:sha-${TAG}
