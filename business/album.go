@@ -103,7 +103,7 @@ func AddMediaToAlbum(albumDTO dto.AddMediaToAlbumDTO) map[string]int64 {
 		mediaType := mediautils.GetMediaType(media.Url)
 
 		albumMedia := model.AlbumMedia{
-			Url:     media.Url,
+			Url:     cosutils.ConvertUrlToKey(media.Url),
 			AlbumId: albumDTO.AlbumId,
 			Type:    mediaType,
 			IsRaw:   media.IsRaw,
@@ -221,7 +221,7 @@ func DeleteAlbum(id string) {
 		}
 
 		// 批量删除 COS 对象
-		if err := cosutils.DeleteCosObjects(keys); err != nil {
+		if err := config.GetCosClient().DeleteObjects(keys); err != nil {
 			tx.Rollback()
 			panic(err)
 		}
@@ -245,7 +245,7 @@ func DeleteAlbum(id string) {
 
 func UpdateAllMediaSize() {
 	db := db.GetDB()
-	cosClient := config.GetCosClient()
+	originalCosClient := config.GetCosClient().GetOriginalClient()
 
 	// 获取所有图片记录
 	var albumImgs []model.AlbumMedia
@@ -262,7 +262,7 @@ func UpdateAllMediaSize() {
 		}
 
 		// 获取对象属性
-		resp, err := cosClient.Object.Head(context.Background(), key, nil)
+		resp, err := originalCosClient.Object.Head(context.Background(), key, nil)
 		if err != nil {
 			zap.L().Error("获取对象属性失败",
 				zap.String("key", key),

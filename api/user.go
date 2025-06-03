@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"ws-home-backend/business"
 	"ws-home-backend/common"
+	"ws-home-backend/config"
 	"ws-home-backend/dto"
 	"ws-home-backend/vo"
 
@@ -36,6 +37,8 @@ func GetUserInfoById(ctx *gin.Context) {
 		common.ErrorWithCode(ctx, common.CodeNotFound)
 		return
 	}
+
+	user.Avatar, _ = config.GetCosClient().GenerateDownloadPresignedURL(user.Avatar)
 
 	zap.L().Info("Get user info by id", zap.Any("user", user))
 	common.OkWithData(ctx, user)
@@ -127,6 +130,8 @@ func GetCurrentUserInfo(ctx *gin.Context) {
 
 	var userVO vo.UserVO
 	copier.Copy(&userVO, &user)
+
+	userVO.Avatar, _ = config.GetCosClient().GenerateDownloadPresignedURL(user.Avatar)
 
 	zap.L().Info("Get current user info", zap.Any("user", userVO))
 	common.OkWithData(ctx, userVO)

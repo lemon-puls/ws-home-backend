@@ -1,81 +1,95 @@
 package api
 
 import (
-	"github.com/gin-gonic/gin"
-	sts "github.com/tencentyun/qcloud-cos-sts-sdk/go"
-	"go.uber.org/zap"
+	"net/http"
 	"time"
 	"ws-home-backend/common"
+	"ws-home-backend/common/cosutils"
 	"ws-home-backend/config"
+	"ws-home-backend/dto"
+	"ws-home-backend/vo"
+
+	"github.com/gin-gonic/gin"
 )
 
-// GetTempCredentials : 获取临时密钥
-// @Summary 获取临时密钥
-// @Description 获取临时密钥
-// @Tags COS 对象存储
-// @Produce json
+// @Summary 获取预签名URL
+// @Description 获取文件上传或下载的预签名URL
+// @Tags 对象存储相关
 // @Accept json
-// @SUCCESS 0 {object} common.Response "成功响应"
-// @Router /cos/credentials [get]
-func GetTempCredentials(ctx *gin.Context) {
-	c := sts.NewClient(
-		// 通过环境变量获取密钥, os.Getenv 方法表示获取环境变量
-		config.Conf.AccessKey, // 用户的 SecretId，建议使用子账号密钥，授权遵循最小权限指引，降低使用风险。子账号密钥获取可参考https://cloud.tencent.com/document/product/598/37140
-		config.Conf.SecretKey, // 用户的 SecretKey，建议使用子账号密钥，授权遵循最小权限指引，降低使用风险。子账号密钥获取可参考https://cloud.tencent.com/document/product/598/37140
-		nil,
-		// sts.Host("sts.internal.tencentcloudapi.com"), // 设置域名, 默认域名sts.tencentcloudapi.com
-		// sts.Scheme("http"),      // 设置协议, 默认为https，公有云sts获取临时密钥不允许走http，特殊场景才需要设置http
-	)
-	// 策略概述 https://cloud.tencent.com/document/product/436/18023
-	opt := &sts.CredentialOptions{
-		DurationSeconds: int64(time.Hour.Seconds()),
-		Region:          config.Conf.Region,
-		Policy: &sts.CredentialPolicy{
-			Statement: []sts.CredentialPolicyStatement{
-				{
-					// 密钥的权限列表。简单上传和分片需要以下的权限，其他权限列表请看 https://cloud.tencent.com/document/product/436/31923
-					Action: []string{
-						// 简单上传
-						"name/cos:PostObject",
-						"name/cos:PutObject",
-						// 删除对象
-						"name/cos:DeleteObject",
-						// 管理对象
-						// 分片上传
-						"name/cos:InitiateMultipartUpload",
-						"name/cos:ListMultipartUploads",
-						"name/cos:ListParts",
-						"name/cos:UploadPart",
-						"name/cos:CompleteMultipartUpload",
-					},
-					Effect: "allow",
-					Resource: []string{
-						// 这里改成允许的路径前缀，可以根据自己网站的用户登录态判断允许上传的具体路径，例子： a.jpg 或者 a/* 或者 * (使用通配符*存在重大安全风险, 请谨慎评估使用)
-						// 存储桶的命名格式为 BucketName-APPID，此处填写的 bucket 必须为此格式
-						//"qcs::cos:" + region + ":uid/" + appid + ":" + bucket + "/exampleobject",
-						"*",
-					},
-					// 开始构建生效条件 condition
-					// 关于 condition 的详细设置规则和COS支持的condition类型可以参考https://cloud.tencent.com/document/product/436/71306
-					//Condition: map[string]map[string]interface{}{
-					//	"ip_equal": map[string]interface{}{
-					//		"qcs:ip": []string{
-					//			"*",
-					//		},
-					//	},
-					//},
-				},
-			},
-		},
-	}
-
-	// 请求临时密钥
-	res, err := c.GetCredential(opt)
-	if err != nil {
-		zap.L().Error("GetCredential failed", zap.Error(err))
-		common.ErrorWithMsg(ctx, err.Error())
+// @Produce json
+// @Param data body dto.GetPresignedURLReq true "请求参数"
+// @Success 200 {object} common.Response{data=vo.GetPresignedURLVO} "成功"
+// @Router /cos/presigned-url [post]
+func GetPresignedURL(ctx *gin.Context) {
+	var req dto.GetPresignedURLReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		common.ValidateError(ctx, err)
 		return
 	}
-	// 返回临时密钥
-	common.OkWithData(ctx, res)
+
+	cosClient := config.GetCosClient()
+
+	// 默认过期时间 1 小时
+	expire := 3600
+
+	// 生成预签名URL
+	var (
+		url string
+		err error
+	)
+
+	switch req.Type {
+	case "upload":
+		url, err = cosClient.GenerateUploadPresignedURL(req.Key)
+	case "download":
+		url, err = cosClient.GenerateDownloadPresignedURL(req.Key)
+	default:
+		common.ErrorWithCode(ctx, http.StatusBadRequest)
+		return
+	}
+
+	if err != nil {
+		common.ErrorWithCode(ctx, http.StatusInternalServerError)
+		return
+	}
+
+	// 计算过期时间戳
+	expireAt := time.Now().Add(time.Duration(expire) * time.Second).Unix()
+
+	common.OkWithData(ctx, vo.GetPresignedURLVO{
+		URL:      url,
+		Key:      req.Key,
+		ExpireAt: expireAt,
+	})
+}
+
+// @Summary 批量删除对象
+// @Description 批量删除指定的对象
+// @Tags 对象存储相关
+// @Accept json
+// @Produce json
+// @Param data body dto.BatchDeleteObjectsReq true "请求参数"
+// @Success 200 {object} common.Response "成功"
+// @Router /cos/batch-delete [post]
+// TODO 该接口不够安全严谨，后续进行优化：对象的 key 路径中包含用户 id，用户只能删除自己的对象
+func BatchDeleteObjects(ctx *gin.Context) {
+	var req dto.BatchDeleteObjectsReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		common.ValidateError(ctx, err)
+		return
+	}
+
+	// 处理每个 key，去除域名和协议（如果有）
+	processedKeys := make([]string, len(req.Keys))
+	for i, key := range req.Keys {
+		processedKeys[i] = cosutils.ExtractKeyFromUrl(key)
+	}
+
+	cosClient := config.GetCosClient()
+	if err := cosClient.DeleteObjects(processedKeys); err != nil {
+		common.ErrorWithCode(ctx, http.StatusInternalServerError)
+		return
+	}
+
+	common.Ok(ctx)
 }

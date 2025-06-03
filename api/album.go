@@ -7,7 +7,9 @@ import (
 	"strings"
 	"ws-home-backend/business"
 	"ws-home-backend/common"
+	"ws-home-backend/common/cosutils"
 	"ws-home-backend/common/page"
+	"ws-home-backend/config"
 	"ws-home-backend/config/db"
 	"ws-home-backend/dto"
 	"ws-home-backend/model"
@@ -69,6 +71,9 @@ func AddOrUpdateAlbum(ctx *gin.Context) {
 		}
 		album.Medias = nil
 	}
+
+	album.CoverImg = cosutils.ConvertUrlToKey(album.CoverImg)
+
 	res1 := DB.Save(&album)
 	if res1.RowsAffected == 0 {
 		common.ErrorWithMsg(ctx, "Failed to create album")
@@ -104,11 +109,17 @@ func ListAlbum(ctx *gin.Context) {
 
 	pageRes := business.ListAlbum(albumQueryDto)
 	albums, _ := pageRes.Records.(*[]model.Album)
+
+	cosClient := config.GetCosClient()
+
 	// 封装为 vo
 	var albumVos []vo.AlbumVO
 	for _, album := range *albums {
 		var albumVo vo.AlbumVO
 		copier.Copy(&albumVo, &album)
+
+		albumVo.CoverImg, _ = cosClient.GenerateDownloadPresignedURL(album.CoverImg)
+
 		albumVos = append(albumVos, albumVo)
 	}
 
@@ -217,6 +228,9 @@ func GetAlbumById(ctx *gin.Context) {
 	}
 	var albumVo vo.AlbumVO
 	copier.Copy(&albumVo, &album)
+
+	albumVo.User.Avatar, _ = config.GetCosClient().GenerateDownloadPresignedURL(album.User.Avatar)
+	
 	common.OkWithData(ctx, albumVo)
 }
 
@@ -265,6 +279,7 @@ func ListMediaByAlbumId(ctx *gin.Context) {
 		} else {
 			convertedCursorPageVo.Data[i].Meta = nil
 		}
+		convertedCursorPageVo.Data[i].Url, _ = config.GetCosClient().GenerateDownloadPresignedURL(media.Url)
 	}
 
 	common.OkWithData(ctx, convertedCursorPageVo)

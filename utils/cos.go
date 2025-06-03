@@ -1,24 +1,17 @@
-package config
+package utils
 
 import (
 	"context"
 	"fmt"
+	"github.com/tencentyun/cos-go-sdk-v5"
+	sts "github.com/tencentyun/qcloud-cos-sts-sdk/go"
+	"go.uber.org/zap"
 	"net/http"
 	"net/url"
 	"reflect"
 	"time"
-	"ws-home-backend/common/cosutils"
-
-	"github.com/tencentyun/cos-go-sdk-v5"
-	sts "github.com/tencentyun/qcloud-cos-sts-sdk/go"
-	"go.uber.org/zap"
+	"ws-home-backend/config"
 )
-
-var cosClient *COSClient
-
-func GetCosClient() *COSClient {
-	return cosClient
-}
 
 // 临时密钥
 type TempCredential struct {
@@ -32,12 +25,7 @@ type TempCredential struct {
 // COS 客户端
 type COSClient struct {
 	client *cos.Client
-	config *CosConfig
-}
-
-// 获取原始客户端
-func (c *COSClient) GetOriginalClient() *cos.Client {
-	return cosClient.client
+	config *config.CosConfig
 }
 
 // 获取临时密钥
@@ -115,7 +103,7 @@ func (c *COSClient) GetTempCredential() (*TempCredential, error) {
 }
 
 // 创建 COS 客户端
-func InitCOSClient(config *CosConfig) (*COSClient, error) {
+func NewCOSClient(config *config.CosConfig) (*COSClient, error) {
 	// 存储桶URL
 	//bucketURL, err := url.Parse(fmt.Sprintf("https://%s.cos.%s.myqcloud.com", config.Bucket, config.Region))
 	bucketURL, err := url.Parse(config.BaseURL)
@@ -138,12 +126,10 @@ func InitCOSClient(config *CosConfig) (*COSClient, error) {
 		},
 	})
 
-	cosClient = &COSClient{
+	return &COSClient{
 		client: client,
 		config: config,
-	}
-
-	return cosClient, nil
+	}, nil
 }
 
 // 生成文件上传预签名URL
@@ -184,11 +170,10 @@ type URLToken struct {
 
 // 生成文件下载预签名URL
 func (c *COSClient) GenerateDownloadPresignedURL(key string) (string, error) {
+
 	if key == "" {
 		return "", fmt.Errorf("key is empty")
 	}
-	// 去除域名和协议（如果有）
-	key = cosutils.ExtractKeyFromUrl(key)
 
 	ctx := context.Background()
 
@@ -239,7 +224,6 @@ func (c *COSClient) DeleteObjects(keys []string) error {
 
 	obs := []cos.Object{}
 	for _, key := range keys {
-		key = cosutils.ConvertUrlToKey(key)
 		obs = append(obs, cos.Object{Key: key})
 	}
 

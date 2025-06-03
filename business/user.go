@@ -79,6 +79,9 @@ func Login(loginDTO dto.LoginDTO, ctx *gin.Context) interface{} {
 	config.RDB.Set(context.Background(), key, accessToken, config.Conf.JwtExpire*time.Minute)
 	var userVO vo.UserVO
 	copier.Copy(&userVO, user)
+
+	userVO.Avatar, _ = config.GetCosClient().GenerateDownloadPresignedURL(user.Avatar)
+
 	return vo.Tokens{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,

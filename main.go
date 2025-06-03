@@ -43,7 +43,7 @@ func main() {
 	// 初始化 雪花算法 ID 生成器
 	config.InitSnowflakeNode(config.Conf.SnowflakeConfig)
 	// 初始化 COS Client
-	config.InitCosClient(config.Conf.CosConfig)
+	config.InitCOSClient(config.Conf.CosConfig)
 
 	r.Run(fmt.Sprintf(":%d", config.Conf.ServerConfig.Port))
 

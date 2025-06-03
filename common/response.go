@@ -66,3 +66,12 @@ func OkWithData(ctx *gin.Context, data interface{}) {
 		Data: data,
 	})
 }
+
+// Ok returns a successful response
+func Ok(ctx *gin.Context) {
+	response(ctx, http.StatusOK, &Response{
+		Code: CodeSuccess,
+		Msg:  Code(CodeSuccess).ToMsg(),
+		Data: nil,
+	})
+}
