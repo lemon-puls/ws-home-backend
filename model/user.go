@@ -11,4 +11,5 @@ type User struct {
 	Age      int8    `gorm:"type:tinyint" json:"age"`
 	Avatar   string  `gorm:"type:varchar(255)" json:"avatar"`
 	Albums   []Album `gorm:"foreignkey:UserId;references:UserId" json:"albums"`
+	OpenID   string  `gorm:"column:open_id;type:varchar(64);uniqueIndex" json:"openID"`
 }

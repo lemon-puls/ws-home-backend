@@ -19,6 +19,7 @@ type AppConfig struct {
 	*AuthConfig      `mapstructure:"auth"`
 	*CosConfig       `mapstructure:"cos"`
 	*AmapConfig      `mapstructure:"amap"`
+	*WxConfig        `mapstructure:"wx"`
 }
 
 type ServerConfig struct {
@@ -76,6 +77,11 @@ type MysqlConfig struct {
 type AmapConfig struct {
 	Key      string `mapstructure:"key"`
 	RegeoURL string `mapstructure:"regeo_url"`
+}
+
+type WxConfig struct {
+	AppID     string `mapstructure:"app_id"`
+	AppSecret string `mapstructure:"app_secret"`
 }
 
 func InitConfig(path string) {

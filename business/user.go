@@ -2,6 +2,10 @@ package business
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
 	"time"
 	"ws-home-backend/common"
 	"ws-home-backend/common/jwt"
@@ -77,6 +81,78 @@ func Login(loginDTO dto.LoginDTO, ctx *gin.Context) interface{} {
 	var remoteIP = ctx.RemoteIP()
 	var key = common.GetUserTokenKey(user.UserId, remoteIP)
 	config.RDB.Set(context.Background(), key, accessToken, config.Conf.JwtExpire*time.Minute)
+	var userVO vo.UserVO
+	copier.Copy(&userVO, user)
+
+	userVO.Avatar, _ = config.GetCosClient().GenerateDownloadPresignedURL(user.Avatar)
+
+	return vo.Tokens{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		UserVO:       userVO,
+	}
+}
+
+// WxLogin 微信小程序登录
+func WxLogin(loginDTO dto.LoginDTO, ctx *gin.Context) interface{} {
+	// 调用微信接口获取openid和session_key
+	url := fmt.Sprintf("https://api.weixin.qq.com/sns/jscode2session?appid=%s&secret=%s&js_code=%s&grant_type=authorization_code",
+		config.Conf.WxConfig.AppID,
+		config.Conf.WxConfig.AppSecret,
+		loginDTO.Code)
+
+	resp, err := http.Get(url)
+	if err != nil {
+		panic(common.NewCustomErrorWithMsg("调用微信接口失败"))
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		panic(common.NewCustomErrorWithMsg("读取微信接口响应失败"))
+	}
+
+	var wxResp struct {
+		OpenID     string `json:"openid"`
+		SessionKey string `json:"session_key"`
+		ErrCode    int    `json:"errcode"`
+		ErrMsg     string `json:"errmsg"`
+	}
+
+	if err := json.Unmarshal(body, &wxResp); err != nil {
+		panic(common.NewCustomErrorWithMsg("解析微信接口响应失败"))
+	}
+
+	if wxResp.ErrCode != 0 {
+		panic(common.NewCustomErrorWithMsg(fmt.Sprintf("微信登录失败: %s", wxResp.ErrMsg)))
+	}
+
+	// 根据openid查找用户是否存在
+	db := db.GetDB()
+	var user model.User
+	res := db.Where(&model.User{OpenID: wxResp.OpenID}).First(&user)
+
+	// 如果用户不存在，则创建新用户
+	if res.RowsAffected == 0 {
+		panic(common.NewCustomErrorWithMsg("用户不存在，无法登录"))
+	}
+
+	// 生成token
+	accessToken, err := jwt.AccessToken(user.UserId)
+	if err != nil {
+		panic(err)
+	}
+
+	refreshToken, err := jwt.RefreshToken(user.UserId)
+	if err != nil {
+		panic(err)
+	}
+
+	// 存储token到Redis
+	var remoteIP = ctx.RemoteIP()
+	var key = common.GetUserTokenKey(user.UserId, remoteIP)
+	config.RDB.Set(context.Background(), key, accessToken, config.Conf.JwtExpire*time.Minute)
+
 	var userVO vo.UserVO
 	copier.Copy(&userVO, user)
 

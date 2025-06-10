@@ -67,17 +67,31 @@ func Register(ctx *gin.Context) {
 
 // Login : 用户登录
 // @Summary 用户登录
-// @Description 用户登录
+// @Description 用户登录(支持手机号密码登录和微信小程序登录)
 // @Tags 用户模块
 // @Produce json
 // @Accept json
-// @Param body body dto.LoginDTO true "用户登录信息"
+// @Param body body dto.LoginDTO true "登录信息(code:微信登录, phone+password:账号密码登录)"
 // @Success 0 {object} common.Response{data=vo.Tokens} "成功响应"
 // @Router /user/login [post]
 func Login(ctx *gin.Context) {
 	var loginDTO dto.LoginDTO
 	if err := ctx.ShouldBindJSON(&loginDTO); err != nil {
 		common.ValidateError(ctx, err)
+		return
+	}
+
+	// 根据是否包含code判断登录方式
+	if loginDTO.Code != "" {
+		// 微信登录
+		token := business.WxLogin(loginDTO, ctx)
+		common.OkWithData(ctx, token)
+		return
+	}
+
+	// 账号密码登录
+	if loginDTO.Phone == "" || loginDTO.Password == "" {
+		common.ErrorWithCode(ctx, common.CodeInvalidParams)
 		return
 	}
 	token := business.Login(loginDTO, ctx)

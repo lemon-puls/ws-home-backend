@@ -7,8 +7,11 @@ type RegisterDTO struct {
 }
 
 type LoginDTO struct {
-	Phone    string `json:"phone" binding:"required,min=11,max=11"`
-	Password string `json:"password" binding:"required,min=6,max=15"`
+	// 微信登录参数
+	Code string `json:"code"`
+	// 账号密码登录参数
+	Phone    string `json:"phone" binding:"omitempty,min=11,max=11"`
+	Password string `json:"password" binding:"omitempty,min=6,max=15"`
 }
 
 type UpdateUserDTO struct {
@@ -20,4 +23,8 @@ type UpdateUserDTO struct {
 	Avatar      string `json:"avatar" binding:"omitempty,url"`
 	OldPassword string `json:"oldPassword" binding:"omitempty,required_with=NewPassword,min=6,max=15"`
 	NewPassword string `json:"newPassword" binding:"omitempty,required_with=OldPassword,min=6,max=15"`
+}
+
+type WxLoginDTO struct {
+	Code string `json:"code" binding:"required"`
 }
