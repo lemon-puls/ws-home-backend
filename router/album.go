@@ -19,5 +19,6 @@ func RegisterAlbumRouter(router *gin.RouterGroup) {
 		albumRouter.DELETE("/:id", api.DeleteAlbum)
 		albumRouter.POST("/media/size", api.UpdateMediaSize)
 		albumRouter.GET("/stats", api.GetUserAlbumStats)
+		albumRouter.GET("/media/random", api.GetRandomMedia)
 	}
 }

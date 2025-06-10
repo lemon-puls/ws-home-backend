@@ -1,10 +1,10 @@
 package api
 
 import (
-	"github.com/goccy/go-json"
-	"go.uber.org/zap"
+	"math/rand"
 	"strconv"
 	"strings"
+	"time"
 	"ws-home-backend/business"
 	"ws-home-backend/common"
 	"ws-home-backend/common/cosutils"
@@ -14,6 +14,10 @@ import (
 	"ws-home-backend/dto"
 	"ws-home-backend/model"
 	"ws-home-backend/vo"
+
+	"github.com/goccy/go-json"
+	"github.com/samber/lo"
+	"go.uber.org/zap"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/copier"
@@ -230,7 +234,7 @@ func GetAlbumById(ctx *gin.Context) {
 	copier.Copy(&albumVo, &album)
 
 	albumVo.User.Avatar, _ = config.GetCosClient().GenerateDownloadPresignedURL(album.User.Avatar)
-	
+
 	common.OkWithData(ctx, albumVo)
 }
 
@@ -346,4 +350,63 @@ func GetUserAlbumStats(ctx *gin.Context) {
 	userId := ctx.GetInt64("userId")
 	stats := business.GetUserAlbumStats(userId)
 	common.OkWithData(ctx, stats)
+}
+
+// GetRandomMedia : 获取随机图片
+// @Summary 获取随机图片
+// @Description 从用户所有相册中随机选择5张图片
+// @Tags 相册功能
+// @Produce json
+// @Accept json
+// @Success 0 {object} common.Response{data=[]string} "成功响应"
+// @Router /album/media/random [get]
+func GetRandomMedia(ctx *gin.Context) {
+	// 从上下文获取当前用户ID
+	userId := ctx.GetInt64("userId")
+
+	// 获取用户的所有相册
+	DB := db.GetDB()
+	var albums []model.Album
+	if err := DB.Where("user_id = ?", userId).Find(&albums).Error; err != nil {
+		common.ErrorWithMsg(ctx, "获取相册失败")
+		return
+	}
+
+	// 获取所有相册ID
+	albumIds := lo.Map(albums, func(album model.Album, _ int) int64 {
+		return album.Id
+	})
+
+	// 批量查询所有图片
+	var allMedia []model.AlbumMedia
+	if err := DB.Where("album_id IN ?", albumIds).Find(&allMedia).Error; err != nil {
+		common.ErrorWithMsg(ctx, "获取图片失败")
+		return
+	}
+
+	// 如果图片数量不足5张，返回所有图片
+	if len(allMedia) <= 5 {
+		cosClient := config.GetCosClient()
+		urls := lo.Map(allMedia, func(media model.AlbumMedia, _ int) string {
+			url, _ := cosClient.GenerateDownloadPresignedURL(media.Url)
+			return url
+		})
+		common.OkWithData(ctx, urls)
+		return
+	}
+
+	// 随机选择5张图片
+	rand.Seed(time.Now().UnixNano())
+	rand.Shuffle(len(allMedia), func(i, j int) {
+		allMedia[i], allMedia[j] = allMedia[j], allMedia[i]
+	})
+
+	// 获取前5张图片的URL
+	cosClient := config.GetCosClient()
+	urls := lo.Map(allMedia[:5], func(media model.AlbumMedia, _ int) string {
+		url, _ := cosClient.GenerateDownloadPresignedURL(media.Url)
+		return url
+	})
+
+	common.OkWithData(ctx, urls)
 }
