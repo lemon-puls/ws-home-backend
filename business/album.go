@@ -2,8 +2,8 @@ package business
 
 import (
 	"context"
-	"github.com/goccy/go-json"
 	"math"
+	"sort"
 	"ws-home-backend/common/cosutils"
 	"ws-home-backend/common/maputils"
 	"ws-home-backend/common/mediautils"
@@ -13,6 +13,8 @@ import (
 	"ws-home-backend/dto"
 	"ws-home-backend/model"
 	"ws-home-backend/vo"
+
+	"github.com/goccy/go-json"
 
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -322,22 +324,85 @@ func GetUserAlbumStats(userId int64) *vo.AlbumStatsVO {
 	}
 
 	var totalPhotos, totalVideos int64
-	var totalSize float64
+	var totalSize, photoSize, videoSize float64
 
 	// 遍历结果并累加数据
 	for _, r := range results {
-		totalSize += r.TotalSize
 		if r.Type == mediautils.MediaTypeImage {
 			totalPhotos = r.Count
+			photoSize = r.TotalSize
 		} else {
 			totalVideos = r.Count
+			videoSize = r.TotalSize
+		}
+		totalSize += r.TotalSize
+	}
+
+	// 获取所有相册的统计信息
+	type albumStats struct {
+		Id        int64   `gorm:"column:id"`
+		Name      string  `gorm:"column:name"`
+		Type      int8    `gorm:"column:type"`
+		Count     int64   `gorm:"column:count"`
+		TotalSize float64 `gorm:"column:total_size"`
+	}
+
+	var albumStatsList []albumStats
+	err = db.Model(&model.AlbumMedia{}).
+		Select("ws_album.id, ws_album.name, ws_album_media.type, COUNT(*) as count, ROUND(SUM(size), 2) as total_size").
+		Joins("JOIN ws_album ON ws_album_media.album_id = ws_album.id").
+		Where("ws_album.user_id = ?", userId).
+		Group("ws_album.id, ws_album.name, ws_album_media.type").
+		Scan(&albumStatsList).Error
+
+	if err != nil {
+		zap.L().Error("统计相册数据失败", zap.Error(err))
+		return &vo.AlbumStatsVO{
+			TotalAlbums: totalAlbums,
+			TotalPhotos: totalPhotos,
+			TotalVideos: totalVideos,
+			TotalSize:   totalSize,
+			PhotoSize:   photoSize,
+			VideoSize:   videoSize,
 		}
 	}
+
+	// 按相册ID分组统计
+	albumStatsMap := make(map[int64]*vo.AlbumStatsItemVO)
+	for _, stat := range albumStatsList {
+		if _, exists := albumStatsMap[stat.Id]; !exists {
+			albumStatsMap[stat.Id] = &vo.AlbumStatsItemVO{
+				Id:   stat.Id,
+				Name: stat.Name,
+			}
+		}
+		item := albumStatsMap[stat.Id]
+		if stat.Type == mediautils.MediaTypeImage {
+			item.PhotoCount = stat.Count
+			item.PhotoSize = stat.TotalSize
+		} else {
+			item.VideoCount = stat.Count
+			item.VideoSize = stat.TotalSize
+		}
+		item.TotalSize = item.PhotoSize + item.VideoSize
+	}
+
+	// 转换为切片并按总大小排序
+	albums := make([]vo.AlbumStatsItemVO, 0, len(albumStatsMap))
+	for _, item := range albumStatsMap {
+		albums = append(albums, *item)
+	}
+	sort.Slice(albums, func(i, j int) bool {
+		return albums[i].TotalSize > albums[j].TotalSize
+	})
 
 	return &vo.AlbumStatsVO{
 		TotalAlbums: totalAlbums,
 		TotalPhotos: totalPhotos,
 		TotalVideos: totalVideos,
 		TotalSize:   totalSize,
+		PhotoSize:   photoSize,
+		VideoSize:   videoSize,
+		Albums:      albums,
 	}
 }

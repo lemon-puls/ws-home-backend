@@ -1,10 +1,9 @@
 package router
 
 import (
+	"github.com/gin-gonic/gin"
 	"ws-home-backend/api"
 	"ws-home-backend/middleware"
-
-	"github.com/gin-gonic/gin"
 )
 
 func RegisterAlbumRouter(router *gin.RouterGroup) {
