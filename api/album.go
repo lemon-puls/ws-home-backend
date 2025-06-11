@@ -235,6 +235,8 @@ func GetAlbumById(ctx *gin.Context) {
 
 	albumVo.User.Avatar, _ = config.GetCosClient().GenerateDownloadPresignedURL(album.User.Avatar)
 
+	albumVo.CoverImg, _ = config.GetCosClient().GenerateDownloadPresignedURL(album.CoverImg)
+
 	common.OkWithData(ctx, albumVo)
 }
 
