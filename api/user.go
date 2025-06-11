@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"ws-home-backend/business"
 	"ws-home-backend/common"
 	"ws-home-backend/config"
@@ -167,12 +168,10 @@ func RefreshToken(ctx *gin.Context) {
 		common.ErrorWithCode(ctx, common.CodeNotLogin)
 		return
 	}
-
-	//parts := strings.SplitN(token, " ", 2)
-	//if len(parts) != 2 || parts[0] != "Bearer" {
-	//	common.ErrorWithCode(ctx, common.CodeNotLogin)
-	//	return
-	//}
+	// 如果有前缀，则去掉
+	if strings.HasPrefix(token, "Bearer ") {
+		token = strings.TrimPrefix(token, "Bearer ")
+	}
 
 	// 调用业务层处理刷新token
 	tokens := business.RefreshToken(token, ctx)
