@@ -49,15 +49,16 @@ func ListAlbum(queryDto dto.AlbumQueryDTO) *page.PageResult {
 		albumIds = append(albumIds, album.Id)
 	}
 
-	// 查询这些相册的照片和视频数量
+	// 查询这些相册的照片和视频数量以及总大小
 	var counts []struct {
-		AlbumId    int64 `gorm:"column:album_id"`
-		Type       int8  `gorm:"column:type"`
-		MediaCount int64 `gorm:"column:media_count"`
+		AlbumId    int64   `gorm:"column:album_id"`
+		Type       int8    `gorm:"column:type"`
+		MediaCount int64   `gorm:"column:media_count"`
+		TotalSize  float64 `gorm:"column:total_size"`
 	}
 
 	db.Model(&model.AlbumMedia{}).
-		Select("album_id, type, count(*) as media_count").
+		Select("album_id, type, count(*) as media_count, ROUND(SUM(size), 2) as total_size").
 		Where("album_id IN ?", albumIds).
 		Group("album_id, type").
 		Find(&counts)
@@ -65,18 +66,21 @@ func ListAlbum(queryDto dto.AlbumQueryDTO) *page.PageResult {
 	// 构建相册ID到照片和视频数量的映射
 	photoCountMap := make(map[int64]int64)
 	videoCountMap := make(map[int64]int64)
+	totalSizeMap := make(map[int64]float64)
 	for _, count := range counts {
 		if count.Type == mediautils.MediaTypeImage {
 			photoCountMap[count.AlbumId] = count.MediaCount
 		} else {
 			videoCountMap[count.AlbumId] = count.MediaCount
 		}
+		totalSizeMap[count.AlbumId] += count.TotalSize
 	}
 
-	// 将照片和视频数量添加到相册对象中
+	// 将照片和视频数量以及总大小添加到相册对象中
 	for i := range albums {
 		albums[i].PhotoCount = photoCountMap[albums[i].Id]
 		albums[i].VideoCount = videoCountMap[albums[i].Id]
+		albums[i].TotalSize = totalSizeMap[albums[i].Id]
 	}
 
 	paginate.Records = &albums
