@@ -6,6 +6,7 @@ import (
 	"strings"
 	"ws-home-backend/business"
 	"ws-home-backend/common"
+	"ws-home-backend/common/cosutils"
 	"ws-home-backend/config"
 	"ws-home-backend/dto"
 	"ws-home-backend/vo"
@@ -113,6 +114,11 @@ func UpdateUser(ctx *gin.Context) {
 	if err := ctx.ShouldBindJSON(&updateUserDTO); err != nil {
 		common.ValidateError(ctx, err)
 		return
+	}
+
+	// 转换头像URL
+	if updateUserDTO.Avatar != "" {
+		updateUserDTO.Avatar = cosutils.ConvertUrlToKey(updateUserDTO.Avatar)
 	}
 
 	// 从上下文获取当前用户ID
