@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"go.uber.org/zap"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -103,12 +104,14 @@ func WxLogin(loginDTO dto.LoginDTO, ctx *gin.Context) interface{} {
 
 	resp, err := http.Get(url)
 	if err != nil {
+		zap.L().Error("调用微信接口查询 openid 失败", zap.Error(err))
 		panic(common.NewCustomErrorWithMsg("调用微信接口失败"))
 	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		zap.L().Error("读取微信接口响应失败", zap.Error(err))
 		panic(common.NewCustomErrorWithMsg("读取微信接口响应失败"))
 	}
 
@@ -120,10 +123,12 @@ func WxLogin(loginDTO dto.LoginDTO, ctx *gin.Context) interface{} {
 	}
 
 	if err := json.Unmarshal(body, &wxResp); err != nil {
+		zap.L().Error("解析微信接口响应失败", zap.Error(err))
 		panic(common.NewCustomErrorWithMsg("解析微信接口响应失败"))
 	}
 
 	if wxResp.ErrCode != 0 {
+		zap.L().Error("微信登录失败", zap.Error(err))
 		panic(common.NewCustomErrorWithMsg(fmt.Sprintf("微信登录失败: %s", wxResp.ErrMsg)))
 	}
 
@@ -134,6 +139,7 @@ func WxLogin(loginDTO dto.LoginDTO, ctx *gin.Context) interface{} {
 
 	// 如果用户不存在，则创建新用户
 	if res.RowsAffected == 0 {
+		zap.L().Info("用户不存在，无法登录")
 		panic(common.NewCustomErrorWithMsg("用户不存在，无法登录"))
 	}
 
