@@ -109,7 +109,7 @@ func AddMediaToAlbum(albumDTO dto.AddMediaToAlbumDTO) map[string]int64 {
 		mediaType := mediautils.GetMediaType(media.Url)
 
 		albumMedia := model.AlbumMedia{
-			Url:     cosutils.ConvertUrlToKey(media.Url),
+			Url:     cosutils.ExtractKeyFromUrl(media.Url),
 			AlbumId: albumDTO.AlbumId,
 			Type:    mediaType,
 			IsRaw:   media.IsRaw,
@@ -133,10 +133,46 @@ func AddMediaToAlbum(albumDTO dto.AddMediaToAlbumDTO) map[string]int64 {
 func RemoveMediaFromAlbum(splits []string) {
 	db := db.GetDB()
 
-	res := db.Where("id in (?)", splits).Delete(&model.AlbumMedia{})
-	if res.Error != nil {
-		panic(res.Error)
+	// 开启事务
+	tx := db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			panic(r)
+		}
+	}()
+
+	// 获取要删除的媒体文件信息
+	var albumMedias []model.AlbumMedia
+	if err := tx.Where("id in (?)", splits).Find(&albumMedias).Error; err != nil {
+		tx.Rollback()
+		panic(err)
 	}
+
+	// 先删除数据库记录
+	if err := tx.Where("id in (?)", splits).Delete(&model.AlbumMedia{}).Error; err != nil {
+		tx.Rollback()
+		panic(err)
+	}
+
+	// 删除 COS 上的文件
+	if len(albumMedias) > 0 {
+		var keys []string
+		for _, media := range albumMedias {
+			// 从完整 URL 中提取对象键名
+			key := cosutils.ExtractKeyFromUrl(media.Url)
+			keys = append(keys, key)
+		}
+
+		// 批量删除 COS 对象
+		if err := config.GetCosClient().DeleteObjects(keys); err != nil {
+			tx.Rollback()
+			panic(err)
+		}
+	}
+
+	// 提交事务
+	tx.Commit()
 }
 
 func GetAlbumById(id string) *model.Album {

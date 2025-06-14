@@ -239,7 +239,7 @@ func (c *COSClient) DeleteObjects(keys []string) error {
 
 	obs := []cos.Object{}
 	for _, key := range keys {
-		key = cosutils.ConvertUrlToKey(key)
+		key = cosutils.ExtractKeyFromUrl(key)
 		obs = append(obs, cos.Object{Key: key})
 	}
 

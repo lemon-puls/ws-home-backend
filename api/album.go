@@ -76,7 +76,7 @@ func AddOrUpdateAlbum(ctx *gin.Context) {
 		album.Medias = nil
 	}
 
-	album.CoverImg = cosutils.ConvertUrlToKey(album.CoverImg)
+	album.CoverImg = cosutils.ExtractKeyFromUrl(album.CoverImg)
 
 	res1 := DB.Save(&album)
 	if res1.RowsAffected == 0 {

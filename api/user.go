@@ -118,7 +118,7 @@ func UpdateUser(ctx *gin.Context) {
 
 	// 转换头像URL
 	if updateUserDTO.Avatar != "" {
-		updateUserDTO.Avatar = cosutils.ConvertUrlToKey(updateUserDTO.Avatar)
+		updateUserDTO.Avatar = cosutils.ExtractKeyFromUrl(updateUserDTO.Avatar)
 	}
 
 	// 从上下文获取当前用户ID
