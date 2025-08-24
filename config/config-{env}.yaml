@@ -65,6 +65,8 @@ cos:
   base_url: "https://www.example.com"
   # 预签名 url 过期时间 单位：秒
   sign_expire: 600
+  # CDN 加速地址
+  cdn_url: "https://www.xxx.com"
 # 高德地图配置
 amap:
   key: "your_amap_key"
