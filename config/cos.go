@@ -175,7 +175,10 @@ func (c *COSClient) GenerateUploadPresignedURL(key string) (string, error) {
 		return "", err
 	}
 
-	return presignedURL.String(), nil
+	// 把前面部分替换为 CDN 加速地址
+	url := strings.Replace(presignedURL.String(), c.config.BaseURL, c.config.CDNURL, 1)
+
+	return url, nil
 }
 
 // 通过 tag 的方式，用户可以将请求参数或者请求头部放进签名中。
